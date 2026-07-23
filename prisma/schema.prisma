@@ -1,0 +1,293 @@
+// VoiceSheets database schema
+// -----------------------------------------------------------------------------
+// Normalized PostgreSQL schema. The design is single-user today but every
+// domain object is scoped to a Workspace with a Membership join table, so
+// teams/permissions can be enabled later without a structural migration.
+//
+// Structure vs. data immutability:
+//   Templates + TemplateColumns define reusable structure. When a Spreadsheet
+//   is created it captures a `columns` snapshot (Json) of the template columns
+//   as they were at that moment. Editing the template afterwards therefore
+//   never mutates historical spreadsheet data. Cells remain fully normalized
+//   for querying, search, stats, and autocomplete.
+// -----------------------------------------------------------------------------
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity & tenancy
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String?  @unique // null in local dev-auth mode
+  email     String   @unique
+  name      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships   Membership[]
+  ownedSpaces   Workspace[]   @relation("WorkspaceOwner")
+  settings      UserSettings?
+  auditLogs     AuditLog[]
+  createdRows   Row[]         @relation("RowCreatedBy")
+  historyEvents RowHistory[]  @relation("HistoryActor")
+
+  @@index([email])
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User          @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships  Membership[]
+  templates    Template[]
+  spreadsheets Spreadsheet[]
+  auditLogs    AuditLog[]
+
+  @@index([ownerId])
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Membership {
+  id          String         @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        MembershipRole @default(OWNER)
+  createdAt   DateTime       @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+// ---------------------------------------------------------------------------
+// Templates & columns (reusable structure)
+// ---------------------------------------------------------------------------
+
+enum TemplateStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ColumnType {
+  TEXT
+  LONG_TEXT
+  NUMBER
+  CURRENCY
+  DATE
+  BOOLEAN
+  DROPDOWN
+}
+
+model Template {
+  id          String         @id @default(cuid())
+  workspaceId String
+  name        String
+  description String?
+  icon        String? // emoji or lucide icon name
+  color       String? // tailwind/hsl accent
+  status      TemplateStatus @default(ACTIVE)
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  workspace    Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  columns      TemplateColumn[]
+  spreadsheets Spreadsheet[]
+
+  @@index([workspaceId, status])
+}
+
+model TemplateColumn {
+  id           String     @id @default(cuid())
+  templateId   String
+  key          String // stable machine key, e.g. "vendor_name"
+  name         String // human label, e.g. "Vendor Name"
+  type         ColumnType @default(TEXT)
+  position     Int        @default(0)
+  required     Boolean    @default(false)
+  defaultValue String?
+  description  String?
+  example      String? // example value shown to users and the AI
+  aiHint       String? // explains the field's meaning to the AI model
+  options      Json? // string[] of choices for DROPDOWN
+  config       Json? // type-specific config (currency code, precision, dateFormat…)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, key])
+  @@index([templateId, position])
+}
+
+// ---------------------------------------------------------------------------
+// Spreadsheets, rows & cells (data)
+// ---------------------------------------------------------------------------
+
+enum SpreadsheetStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Spreadsheet {
+  id             String            @id @default(cuid())
+  workspaceId    String
+  templateId     String?
+  name           String
+  description    String?
+  status         SpreadsheetStatus @default(ACTIVE)
+  isFavorite     Boolean           @default(false)
+  // Snapshot of column definitions at creation time. Shape matches
+  // ColumnDefinition in src/lib/columns.ts. Guarantees historical stability.
+  columns        Json
+  createdById    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  lastActivityAt DateTime          @default(now())
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  template  Template?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  rows      Row[]
+  history   RowHistory[]
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, isFavorite])
+  @@index([lastActivityAt])
+}
+
+enum RowSource {
+  MANUAL
+  VOICE
+  AI
+  IMPORT
+}
+
+model Row {
+  id            String    @id @default(cuid())
+  spreadsheetId String
+  position      Int       @default(0)
+  source        RowSource @default(MANUAL)
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // soft delete
+
+  spreadsheet Spreadsheet  @relation(fields: [spreadsheetId], references: [id], onDelete: Cascade)
+  createdBy   User?        @relation("RowCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  cells       Cell[]
+  history     RowHistory[]
+
+  @@index([spreadsheetId, position])
+  @@index([spreadsheetId, deletedAt])
+}
+
+model Cell {
+  id          String   @id @default(cuid())
+  rowId       String
+  columnKey   String
+  // Native-typed value: string | number | boolean | null (Json preserves type)
+  value       Json?
+  // AI provenance for confidence indicators and "clean up" flows.
+  aiGenerated Boolean  @default(false)
+  confidence  Float? // 0..1 when set by the AI service
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  row Row @relation(fields: [rowId], references: [id], onDelete: Cascade)
+
+  @@unique([rowId, columnKey])
+  @@index([columnKey])
+}
+
+// ---------------------------------------------------------------------------
+// Version history
+// ---------------------------------------------------------------------------
+
+enum HistoryChangeType {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  IMPORT
+}
+
+model RowHistory {
+  id            String            @id @default(cuid())
+  spreadsheetId String
+  rowId         String?
+  changeType    HistoryChangeType
+  columnKey     String? // null => whole-row change
+  previousValue Json?
+  newValue      Json?
+  // Full row snapshot { [columnKey]: value } enabling one-click restore.
+  snapshot      Json?
+  actorId       String?
+  createdAt     DateTime          @default(now())
+
+  spreadsheet Spreadsheet @relation(fields: [spreadsheetId], references: [id], onDelete: Cascade)
+  row         Row?        @relation(fields: [rowId], references: [id], onDelete: SetNull)
+  actor       User?       @relation("HistoryActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([spreadsheetId, createdAt])
+  @@index([rowId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Settings & audit
+// ---------------------------------------------------------------------------
+
+model UserSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  theme          String   @default("system") // light | dark | system
+  dateFormat     String   @default("yyyy-MM-dd")
+  currency       String   @default("USD")
+  locale         String   @default("en-US")
+  aiPreferences  Json? // { autoSuggest, model, temperature, cleanupOnImport… }
+  exportDefaults Json? // { format: "xlsx" | "csv", includeHidden… }
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String
+  actorId     String?
+  action      String // e.g. "template.create", "row.voice_commit"
+  entityType  String // e.g. "template" | "spreadsheet" | "row"
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actor     User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([entityType, entityId])
+}

@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: voicesheets-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: voicesheets
+      POSTGRES_PASSWORD: voicesheets
+      POSTGRES_DB: voicesheets
+    ports:
+      - "5432:5432"
+    volumes:
+      - voicesheets-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voicesheets"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional: run the built app in a container. For local development you will
+  # usually run `npm run dev` on the host and only use the `db` service above.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voicesheets-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://voicesheets:voicesheets@db:5432/voicesheets?schema=public
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      VOICESHEETS_FORCE_DEV_AUTH: "true"
+    ports:
+      - "3000:3000"
+    profiles:
+      - full
+
+volumes:
+  voicesheets-db-data:

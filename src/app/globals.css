@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Binaria Analytics palette — brand blue #2557E6 on light blue-gray surfaces. */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 229 24% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 229 24% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 229 24% 10%;
+    --primary: 224 79% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 46% 97%;
+    --secondary-foreground: 224 40% 22%;
+    --muted: 222 44% 96%;
+    --muted-foreground: 223 10% 42%;
+    --accent: 227 84% 95%;
+    --accent-foreground: 224 70% 42%;
+    --destructive: 6 64% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 228 38% 90%;
+    --input: 228 38% 88%;
+    --ring: 224 79% 52%;
+    --radius: 0.75rem;
+
+    /* Brand gradient (hero / brand mark) */
+    --brand-from: 224 79% 52%;
+    --brand-to: 227 68% 26%;
+
+    /* AI confidence indicators */
+    --confidence-high: 142 66% 40%;
+    --confidence-medium: 34 90% 44%;
+    --confidence-low: 6 64% 48%;
+  }
+
+  .dark {
+    --background: 228 26% 8%;
+    --foreground: 223 30% 95%;
+    --card: 228 24% 11%;
+    --card-foreground: 223 30% 95%;
+    --popover: 228 24% 11%;
+    --popover-foreground: 223 30% 95%;
+    --primary: 224 90% 68%;
+    --primary-foreground: 228 45% 12%;
+    --secondary: 228 20% 16%;
+    --secondary-foreground: 223 30% 95%;
+    --muted: 228 18% 16%;
+    --muted-foreground: 224 14% 64%;
+    --accent: 228 24% 20%;
+    --accent-foreground: 223 40% 96%;
+    --destructive: 6 60% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 228 18% 21%;
+    --input: 228 18% 23%;
+    --ring: 224 90% 68%;
+
+    --brand-from: 224 84% 60%;
+    --brand-to: 227 70% 34%;
+
+    --confidence-high: 142 62% 52%;
+    --confidence-medium: 38 92% 58%;
+    --confidence-low: 6 72% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Schibsted Grotesk for display/headings, matching the Binaria brand. */
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .vs-brand-gradient {
+    background-image: linear-gradient(
+      150deg,
+      hsl(var(--brand-from)) 0%,
+      hsl(var(--brand-to)) 100%
+    );
+  }
+
+  /* Shimmering loading text (e.g. "Transcribing…") */
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted-foreground) / 0.45) 25%,
+      hsl(var(--foreground)) 50%,
+      hsl(var(--muted-foreground) / 0.45) 75%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Spreadsheet grid utilities */
+@layer components {
+  .vs-cell {
+    @apply px-3 py-1.5 text-sm outline-none;
+  }
+  .vs-cell-editing {
+    @apply ring-2 ring-ring ring-inset;
+  }
+  .vs-cell-selected {
+    @apply bg-accent/60;
+  }
+}
+
+/* Thin, unobtrusive scrollbars for the data grid */
+.vs-scroll::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.vs-scroll::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-border;
+}
+.vs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
