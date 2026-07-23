@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Produce a self-contained server bundle for the Docker runner image.
-  output: "standalone",
+  // Self-contained server bundle for the Docker image. Vercel builds Next
+  // natively, so standalone output is skipped there.
+  output: process.env.VERCEL ? undefined : "standalone",
   // xlsx and other heavy libraries stay server-only where possible.
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client", "prisma"],
