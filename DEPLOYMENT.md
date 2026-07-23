@@ -13,17 +13,19 @@ Recommended stack for a phone-viewable deployment:
 
 1. Sign up at <https://supabase.com> → **New Project** (pick a region and set a database password).
 2. Open **Project Settings → Database → Connection string**. You'll use **two** forms of it:
-   - **Direct connection** — host `db.<ref>.supabase.co`, port `5432` → used to create the schema.
-   - **Transaction pooler** — host `...pooler.supabase.com`, port `6543` → used by the deployed app (serverless-friendly).
+   - **Session pooler** — host `aws-<n>-<region>.pooler.supabase.com`, port `5432` → used to create the schema.
+   - **Transaction pooler** — same host, port `6543` → used by the deployed app (serverless-friendly).
+
+> ⚠️ **Don't use the "Direct connection" string.** `db.<ref>.supabase.co` resolves to **IPv6 only**, and most home/office networks can't reach Postgres over IPv6 — you'll get `P1001: Can't reach database server`. Both pooler hostnames are IPv4-friendly, so use those.
 
 > Both strings contain your DB password — treat them as secrets.
 
 ## 2. Create the schema in Supabase (one-time, from your machine)
 
-Use the **Direct connection** string (port 5432):
+Use the **Session pooler** string (port 5432 — session mode supports the DDL Prisma needs):
 
 ```bash
-DATABASE_URL="<supabase-direct-connection-string>" npx prisma db push
+DATABASE_URL="<supabase-session-pooler-string>" npx prisma db push
 ```
 
 This creates every table. You **don't** need to seed sample data — new accounts automatically get two starter templates on first sign-in.
@@ -80,6 +82,6 @@ git push -u origin main
 
 - **Voice on phone:** microphone capture requires HTTPS — Vercel provides it, so it works on your phone.
 - **Redeploys:** every `git push` to `main` auto-deploys.
-- **Schema changes later:** re-run `DATABASE_URL="<supabase-direct-connection>" npx prisma db push` (use the direct 5432 string, not the pooler).
-- **Why two connection strings?** Prisma's `db push` needs a direct connection (5432); serverless functions on Vercel should use the pooled connection (6543, `pgbouncer=true`) to avoid exhausting Postgres connections.
+- **Schema changes later:** re-run `DATABASE_URL="<supabase-session-pooler>" npx prisma db push` (the 5432 pooler string).
+- **Why two connection strings?** `db push` needs *session* mode (5432) for DDL; serverless functions on Vercel should use the *transaction* pooler (6543, `pgbouncer=true`) to avoid exhausting Postgres connections.
 - **Secrets:** `.env` is gitignored; only `.env.example` (empty placeholders) is committed. Never put real keys in `.env.example`.
