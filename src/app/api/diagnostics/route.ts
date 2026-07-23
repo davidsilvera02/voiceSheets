@@ -71,6 +71,16 @@ function describeDatabaseUrl(): Record<string, unknown> {
       present: true,
       host: url.hostname,
       port: url.port || "(default 5432)",
+      // Supabase poolers require the project-qualified user `postgres.<ref>`;
+      // a bare `postgres` authenticates against the direct host only.
+      user: decodeURIComponent(url.username),
+      userIsProjectQualified: url.username.includes("."),
+      // Never the password itself — just enough to spot the usual mistakes:
+      // an unsubstituted placeholder, or stray quotes/whitespace from a paste.
+      passwordLength: decodeURIComponent(url.password).length,
+      passwordLooksWrong:
+        /\[|\]|YOUR|PASSWORD/i.test(decodeURIComponent(url.password)) ||
+        decodeURIComponent(url.password).trim() !== decodeURIComponent(url.password),
       database: url.pathname.replace(/^\//, ""),
       params: Object.fromEntries(url.searchParams.entries()),
       // The Vercel runtime needs the *transaction* pooler (port 6543).
