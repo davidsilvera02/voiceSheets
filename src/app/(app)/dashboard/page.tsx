@@ -57,14 +57,14 @@ export default function DashboardPage() {
           value={templates.data?.meta.total}
           href="/templates"
         />
-        <Card className="bg-gradient-to-br from-primary/10 to-transparent">
+        <Card className="vs-brand-gradient border-0 text-white shadow-soft-md">
           <CardContent className="flex items-center gap-3 p-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm">
               <Sparkles className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-sm font-medium">Voice entry</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <p className="font-display text-sm font-semibold">Voice entry</p>
+              <p className="text-xs text-white/75">
                 Open a spreadsheet and dictate rows hands-free.
               </p>
             </div>
@@ -136,11 +136,11 @@ function StatCard({
     <Link href={href}>
       <Card className="transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
         <CardContent className="flex items-center gap-3 p-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-            <Icon className="h-5 w-5 text-muted-foreground" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/15">
+            <Icon className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-2xl font-semibold">{value ?? "—"}</p>
+            <p className="font-display text-2xl font-bold tracking-tight">{value ?? "—"}</p>
             <p className="text-xs text-muted-foreground">{label}</p>
           </div>
         </CardContent>
@@ -170,14 +170,14 @@ function SheetCard({
             {sheet.isFavorite && <Star className="h-4 w-4 shrink-0 fill-amber-400 text-amber-400" />}
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-2 p-4 pt-0 text-xs text-muted-foreground">
+        <CardContent className="flex items-center gap-2 overflow-hidden p-4 pt-0 text-xs text-muted-foreground">
           {sheet.templateName && (
-            <Badge variant="secondary" className="font-normal">
+            <Badge variant="secondary" className="min-w-0 max-w-[50%] font-normal">
               {sheet.templateName}
             </Badge>
           )}
-          <span>{sheet.rowCount} rows</span>
-          <span className="ml-auto">
+          <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} rows</span>
+          <span className="ml-auto shrink-0 whitespace-nowrap">
             {formatDistanceToNow(new Date(sheet.lastActivityAt), { addSuffix: true })}
           </span>
         </CardContent>

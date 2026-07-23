@@ -252,14 +252,14 @@ function SheetCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="mt-auto flex items-center gap-2 text-xs text-muted-foreground">
+      <CardContent className="mt-auto flex items-center gap-2 overflow-hidden text-xs text-muted-foreground">
         {sheet.templateName && (
-          <Badge variant="secondary" className="font-normal">
+          <Badge variant="secondary" className="min-w-0 max-w-[50%] font-normal">
             {sheet.templateName}
           </Badge>
         )}
-        <span>{sheet.rowCount} rows</span>
-        <span className="ml-auto">
+        <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} rows</span>
+        <span className="ml-auto shrink-0 whitespace-nowrap">
           {formatDistanceToNow(new Date(sheet.lastActivityAt), { addSuffix: true })}
         </span>
       </CardContent>

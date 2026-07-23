@@ -29,6 +29,8 @@
     /* Brand gradient (hero / brand mark) */
     --brand-from: 224 79% 52%;
     --brand-to: 227 68% 26%;
+    /* Slightly deeper primary, for button gradients */
+    --primary-deep: 224 79% 44%;
 
     /* AI confidence indicators */
     --confidence-high: 142 66% 40%;
@@ -59,6 +61,7 @@
 
     --brand-from: 224 84% 60%;
     --brand-to: 227 70% 34%;
+    --primary-deep: 224 84% 60%;
 
     --confidence-high: 142 62% 52%;
     --confidence-medium: 38 92% 58%;
@@ -91,6 +94,24 @@
       hsl(var(--brand-from)) 0%,
       hsl(var(--brand-to)) 100%
     );
+  }
+
+  /* Subtle vertical gradient for primary buttons — adds depth without
+     leaving the brand palette. */
+  .vs-btn-primary {
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-deep)) 100%
+    );
+  }
+
+  /* Ambient brand glow behind the app canvas. */
+  .vs-app-bg {
+    background-image:
+      radial-gradient(55rem 28rem at 8% -8%, hsl(var(--primary) / 0.10), transparent 60%),
+      radial-gradient(45rem 24rem at 100% 2%, hsl(var(--brand-to) / 0.08), transparent 55%);
+    background-attachment: fixed;
   }
 
   /* Shimmering loading text (e.g. "Transcribing…") */

@@ -21,7 +21,10 @@ export const env = {
 
   // Anthropic
   ANTHROPIC_API_KEY: str(process.env.ANTHROPIC_API_KEY),
-  ANTHROPIC_MODEL: str(process.env.ANTHROPIC_MODEL) || "claude-opus-4-8",
+  // Sonnet 5 is the speed/quality sweet spot for row extraction.
+  // Override with ANTHROPIC_MODEL (e.g. claude-haiku-4-5 for max speed,
+  // claude-opus-4-8 for max capability).
+  ANTHROPIC_MODEL: str(process.env.ANTHROPIC_MODEL) || "claude-sonnet-5",
 
   // Whisper (OpenAI)
   OPENAI_API_KEY: str(process.env.OPENAI_API_KEY),

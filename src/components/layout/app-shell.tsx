@@ -120,7 +120,7 @@ export function AppShell({
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-gradient-to-b from-muted/30 to-muted/60">
+    <div className="vs-app-bg flex min-h-screen w-full bg-muted/40">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 border-r bg-background md:block">{sidebar}</aside>
 
