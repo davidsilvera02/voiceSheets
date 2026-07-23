@@ -12,6 +12,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     ctx = await getAuthContext();
   } catch (error) {
     if (error instanceof UnauthorizedError) redirect("/sign-in");
+    // Next.js replaces server errors with an opaque digest in production, so
+    // log the real cause here or a broken deployment is undiagnosable.
+    // `/api/diagnostics` reports the same failure over HTTP.
+    console.error("[voicesheets] Auth context failed in app layout:", error);
     throw error;
   }
 
