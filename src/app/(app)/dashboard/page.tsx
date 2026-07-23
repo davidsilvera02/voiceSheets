@@ -22,6 +22,8 @@ export default function DashboardPage() {
   const recent = useSpreadsheets();
   const favorites = useSpreadsheets({ favorite: true });
   const templates = useTemplates({ status: "ACTIVE" });
+  // Most recently edited sheet — the voice card jumps straight into it.
+  const latest = recent.data?.data[0];
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 p-6">
@@ -57,19 +59,24 @@ export default function DashboardPage() {
           value={templates.data?.meta.total}
           href="/templates"
         />
-        <Card className="vs-brand-gradient border-0 text-white shadow-soft-md">
-          <CardContent className="flex items-center gap-3 p-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white backdrop-blur-sm">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-display text-sm font-semibold">Voice entry</p>
-              <p className="text-xs text-white/75">
-                Open a spreadsheet and dictate rows hands-free.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <Link
+          href={latest ? `/spreadsheets/${latest.id}?voice=1` : "/spreadsheets?new=1"}
+          className="block h-full"
+        >
+          <Card className="h-full bg-gradient-to-br from-primary/10 to-transparent transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
+            <CardContent className="flex h-full items-center gap-3 p-5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium">Voice entry</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {latest ? `Dictate a row into ${latest.name}` : "Create a spreadsheet to start dictating"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <section className="space-y-3">
@@ -133,15 +140,15 @@ function StatCard({
   href: string;
 }) {
   return (
-    <Link href={href}>
-      <Card className="transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
-        <CardContent className="flex items-center gap-3 p-5">
+    <Link href={href} className="block h-full">
+      <Card className="h-full transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
+        <CardContent className="flex h-full items-center gap-3 p-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/15">
             <Icon className="h-5 w-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="font-display text-2xl font-bold tracking-tight">{value ?? "—"}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="truncate text-xs text-muted-foreground">{label}</p>
           </div>
         </CardContent>
       </Card>

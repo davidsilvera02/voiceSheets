@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { RowSelectionState } from "@tanstack/react-table";
 import { toast } from "sonner";
 import type { CellValue } from "@/lib/columns";
@@ -51,6 +51,7 @@ interface EditOp {
 
 export function SpreadsheetView({ id }: { id: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const sheetQuery = useSpreadsheet(id);
   const rowsQuery = useRows(id);
   const updateSheet = useUpdateSpreadsheet(id);
@@ -68,6 +69,10 @@ export function SpreadsheetView({ id }: { id: string }) {
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
+  // Deep link: /spreadsheets/[id]?voice=1 opens voice entry straight away.
+  useEffect(() => {
+    if (searchParams.get("voice") === "1") setVoiceOpen(true);
+  }, [searchParams]);
   const [importOpen, setImportOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
