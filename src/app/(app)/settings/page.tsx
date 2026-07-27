@@ -1,10 +1,13 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Check, Cpu, Mic, ShieldCheck, X } from "lucide-react";
+import { Check, Cpu, LogOut, Mic, ShieldCheck, X } from "lucide-react";
+import { SignOutButton } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,6 +53,44 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
       <PageHeader title="Settings" description="Personalize VoiceSheets to fit your workflow." />
+
+      {me.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Account</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar>
+                {me.data.user.imageUrl && (
+                  <AvatarImage src={me.data.user.imageUrl} alt={me.data.user.name ?? "You"} />
+                )}
+                <AvatarFallback>
+                  {(me.data.user.name ?? me.data.user.email ?? "U")
+                    .split(/\s+/)
+                    .map((p) => p[0])
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{me.data.user.name ?? "You"}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {me.data.capabilities.clerk ? me.data.user.email : "Single-user dev mode"}
+                </p>
+              </div>
+            </div>
+            {me.data.capabilities.clerk && (
+              <SignOutButton redirectUrl="/sign-in">
+                <Button variant="outline" size="sm">
+                  <LogOut className="h-4 w-4" /> Sign out
+                </Button>
+              </SignOutButton>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

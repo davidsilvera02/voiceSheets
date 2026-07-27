@@ -17,7 +17,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Eye, Plus, Save } from "lucide-react";
+import { Copy, Eye, Lock, Plus, Save } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ import {
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { ColumnRow, type EditableColumn } from "@/components/templates/column-row";
 import { TemplatePreview } from "@/components/templates/template-preview";
-import { useCreateTemplate, useUpdateTemplate } from "@/hooks/use-templates";
+import { useCreateTemplate, useDuplicateTemplate, useUpdateTemplate } from "@/hooks/use-templates";
 import { ApiClientError } from "@/lib/api-client";
 import type { CreateTemplateInput } from "@/lib/validations";
 import type { ColumnConfig } from "@/lib/columns";
@@ -81,6 +81,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
 
   const [name, setName] = useState(template?.name ?? "");
   const [description, setDescription] = useState(template?.description ?? "");
+  const [voiceExample, setVoiceExample] = useState(template?.voiceExample ?? "");
   const [icon, setIcon] = useState(template?.icon ?? "ShoppingCart");
   const [columns, setColumns] = useState<EditableColumn[]>(
     template ? fromTemplate(template) : [{ ...blankColumn(), name: "Name" }],
@@ -93,15 +94,55 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
       JSON.stringify({
         name: name.trim(),
         description: description.trim(),
+        voiceExample: voiceExample.trim(),
         icon,
         columns: columns.map(({ id: _id, ...rest }) => rest),
       }),
-    [name, description, icon, columns],
+    [name, description, voiceExample, icon, columns],
   );
   const initialSnapshot = useRef<string | null>(null);
   if (initialSnapshot.current === null) initialSnapshot.current = snapshot;
   const dirty = initialSnapshot.current !== snapshot;
   const guard = useNavigationGuard(dirty);
+
+  // Once a template has spreadsheets, its structure is locked: columns can't be
+  // added, removed, or retyped (that would diverge from the immutable snapshot
+  // each spreadsheet already holds). Names, examples, and AI hints stay
+  // editable; changing the structure means duplicating into a new template.
+  const structureLocked = !!template && template.spreadsheetCount > 0;
+  const duplicate = useDuplicateTemplate();
+
+  async function handleDuplicate() {
+    if (!template) return;
+    try {
+      const copy = await duplicate.mutateAsync(template.id);
+      toast.success("Template duplicated — edit the copy freely");
+      initialSnapshot.current = snapshot; // avoid the unsaved-changes prompt
+      router.push(`/templates/${copy.id}/edit`);
+    } catch (error) {
+      toast.error(error instanceof ApiClientError ? error.message : "Failed to duplicate");
+    }
+  }
+
+  // Editing a column's label or AI guidance on an in-use template propagates to
+  // its spreadsheets (a safe relabel) — so warn before saving those changes.
+  const [showUpdateSheets, setShowUpdateSheets] = useState(false);
+  const metadataChanged = useMemo(() => {
+    if (!template) return false;
+    const orig = new Map(template.columns.map((c) => [c.key, c]));
+    return columns.some((c) => {
+      if (!c.key) return false;
+      const o = orig.get(c.key);
+      if (!o) return false;
+      return (
+        c.name.trim() !== o.name ||
+        c.example.trim() !== (o.example ?? "") ||
+        c.aiHint.trim() !== (o.aiHint ?? "") ||
+        c.description.trim() !== (o.description ?? "")
+      );
+    });
+  }, [template, columns]);
+  const willUpdateSheets = structureLocked && metadataChanged;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -155,6 +196,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
     return {
       name: name.trim(),
       description: description.trim() || null,
+      voiceExample: voiceExample.trim() || null,
       icon,
       columns: named.map((c, index) => ({
         key: c.key,
@@ -191,12 +233,21 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
     }
   }
 
-  async function handleSave() {
+  async function doSave() {
     const res = await persist();
     if (res.ok && res.id) {
       initialSnapshot.current = snapshot; // mark clean before navigating
       router.push(`/templates/${res.id}`);
     }
+  }
+
+  async function handleSave() {
+    // Confirm before relabeling spreadsheets that use this template.
+    if (willUpdateSheets) {
+      setShowUpdateSheets(true);
+      return;
+    }
+    await doSave();
   }
 
   const saving = create.isPending || update.isPending;
@@ -220,7 +271,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
 
       <Card>
         <CardContent className="space-y-4 p-5">
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <div className="space-y-1.5">
               <Label className="text-xs">Icon</Label>
               <div className="flex max-w-[17rem] flex-wrap gap-1.5">
@@ -265,19 +316,64 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
               rows={2}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="tpl-voice" className="text-xs">
+              Voice example
+            </Label>
+            <Textarea
+              id="tpl-voice"
+              value={voiceExample}
+              onChange={(e) => setVoiceExample(e.target.value)}
+              placeholder="e.g. Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday."
+              rows={2}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Shown as a guide in the voice-entry box before recording. Leave blank for a default.
+            </p>
+          </div>
         </CardContent>
       </Card>
+
+      {structureLocked && (
+        <div className="flex flex-col gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-2.5">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium">
+                Structure locked — {template?.spreadsheetCount} spreadsheet
+                {template?.spreadsheetCount === 1 ? "" : "s"} use this template
+              </p>
+              <p className="mt-0.5 text-muted-foreground">
+                You can refine names, examples, and AI hints. To add, remove, or retype a
+                column, duplicate this template and build new spreadsheets from the copy.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={handleDuplicate}
+            disabled={duplicate.isPending}
+          >
+            <Copy className="h-4 w-4" />
+            {duplicate.isPending ? "Duplicating…" : "Duplicate to edit structure"}
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Columns ({columns.length})</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setColumns((c) => [...c, blankColumn()])}
-          >
-            <Plus className="h-4 w-4" /> Add column
-          </Button>
+          {!structureLocked && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setColumns((c) => [...c, blankColumn()])}
+            >
+              <Plus className="h-4 w-4" /> Add column
+            </Button>
+          )}
         </div>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -287,6 +383,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                 <ColumnRow
                   key={column.id}
                   column={column}
+                  locked={structureLocked}
                   onChange={(next) =>
                     setColumns((cols) => cols.map((c) => (c.id === next.id ? next : c)))
                   }
@@ -347,6 +444,38 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                 {saving ? "Saving…" : "Save & leave"}
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm relabeling spreadsheets when metadata changes on an in-use template */}
+      <Dialog open={showUpdateSheets} onOpenChange={setShowUpdateSheets}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Update {template?.spreadsheetCount} spreadsheet
+              {template?.spreadsheetCount === 1 ? "" : "s"}?
+            </DialogTitle>
+            <DialogDescription>
+              You changed column labels or AI guidance. These will also update the{" "}
+              {template?.spreadsheetCount} spreadsheet
+              {template?.spreadsheetCount === 1 ? "" : "s"} built from this template. Only the
+              names and AI hints change — your data, column types, and layout stay the same.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="ghost" onClick={() => setShowUpdateSheets(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={saving}
+              onClick={async () => {
+                setShowUpdateSheets(false);
+                await doSave();
+              }}
+            >
+              {saving ? "Saving…" : "Save & update"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

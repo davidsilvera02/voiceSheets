@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { AuthContext } from "@/server/auth";
 import { NotFoundError, ValidationError } from "@/server/http";
-import { serializeTemplate } from "@/server/serializers";
+import { serializeTemplate, snapshotColumns } from "@/server/serializers";
 import { recordAudit } from "@/server/services/audit-service";
 import type { CreateTemplateInput, TemplateColumnInput, UpdateTemplateInput } from "@/lib/validations";
 
@@ -52,6 +52,54 @@ function normalizeColumns(columns: TemplateColumnInput[]) {
   });
 }
 
+/**
+ * Propagate a template's non-structural column metadata (label + AI guidance)
+ * to the spreadsheets built from it. Matches by stable key and only ever
+ * touches name/description/example/aiHint — never type, required, order, or the
+ * cell data — so it's a safe, reversible relabel. Returns spreadsheets changed.
+ */
+async function propagateMetadataToSpreadsheets(
+  tx: Prisma.TransactionClient,
+  templateId: string,
+  columns: ReturnType<typeof normalizeColumns>,
+): Promise<number> {
+  const sheets = await tx.spreadsheet.findMany({
+    where: { templateId },
+    select: { id: true, columns: true },
+  });
+  const byKey = new Map(columns.map((c) => [c.key, c]));
+  let changedSheets = 0;
+  for (const sheet of sheets) {
+    let changed = false;
+    const next = snapshotColumns(sheet.columns).map((col) => {
+      const t = byKey.get(col.key);
+      if (!t) return col; // column no longer in the template — leave untouched
+      const name = t.name;
+      const description = t.description ?? null;
+      const example = t.example ?? null;
+      const aiHint = t.aiHint ?? null;
+      if (
+        name !== col.name ||
+        description !== (col.description ?? null) ||
+        example !== (col.example ?? null) ||
+        aiHint !== (col.aiHint ?? null)
+      ) {
+        changed = true;
+        return { ...col, name, description, example, aiHint };
+      }
+      return col;
+    });
+    if (changed) {
+      await tx.spreadsheet.update({
+        where: { id: sheet.id },
+        data: { columns: next as unknown as Prisma.InputJsonValue },
+      });
+      changedSheets++;
+    }
+  }
+  return changedSheets;
+}
+
 export async function listTemplates(
   workspaceId: string,
   opts: { status?: "ACTIVE" | "ARCHIVED"; search?: string; skip: number; take: number },
@@ -95,6 +143,7 @@ export async function createTemplate(ctx: AuthContext, input: CreateTemplateInpu
       description: input.description ?? null,
       icon: input.icon ?? null,
       color: input.color ?? null,
+      voiceExample: input.voiceExample ?? null,
       columns: { create: columns },
     },
     include: templateInclude,
@@ -124,18 +173,23 @@ export async function updateTemplate(ctx: AuthContext, id: string, input: Update
         description: input.description === undefined ? undefined : input.description,
         icon: input.icon === undefined ? undefined : input.icon,
         color: input.color === undefined ? undefined : input.color,
+        voiceExample: input.voiceExample === undefined ? undefined : input.voiceExample,
         status: input.status ?? undefined,
       },
     });
 
-    // Replace column definitions when provided. Existing spreadsheets are
-    // unaffected because they hold their own immutable column snapshot.
+    // Replace the template's column definitions. Existing spreadsheets keep
+    // their own immutable structure (type/required/columns), so a template edit
+    // never changes the shape of spreadsheets already built from it. Column
+    // labels and AI guidance (name/description/example/aiHint) DO propagate —
+    // they're safe relabels matched by stable key.
     if (input.columns) {
       const columns = normalizeColumns(input.columns);
       await tx.templateColumn.deleteMany({ where: { templateId: id } });
       await tx.templateColumn.createMany({
         data: columns.map((c) => ({ ...c, templateId: id })),
       });
+      await propagateMetadataToSpreadsheets(tx, id, columns);
     }
 
     return tx.template.findUniqueOrThrow({ where: { id }, include: templateInclude });

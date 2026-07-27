@@ -53,6 +53,7 @@ export function serializeTemplate(
     description: template.description,
     icon: template.icon,
     color: template.color,
+    voiceExample: template.voiceExample,
     status: template.status,
     columns: template.columns
       .slice()
@@ -65,7 +66,7 @@ export function serializeTemplate(
 }
 
 type SpreadsheetWithCounts = Spreadsheet & {
-  template?: { name: string } | null;
+  template?: { name: string; voiceExample: string | null } | null;
   _count?: { rows: number };
 };
 
@@ -78,6 +79,7 @@ export function serializeSpreadsheetSummary(s: SpreadsheetWithCounts): Spreadshe
     isFavorite: s.isFavorite,
     templateId: s.templateId,
     templateName: s.template?.name ?? null,
+    voiceExample: s.template?.voiceExample ?? null,
     rowCount: s._count?.rows ?? 0,
     columnCount: snapshotColumns(s.columns).length,
     createdAt: s.createdAt.toISOString(),

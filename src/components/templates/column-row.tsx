@@ -57,10 +57,17 @@ export function ColumnRow({
   column,
   onChange,
   onRemove,
+  locked = false,
 }: {
   column: EditableColumn;
   onChange: (next: EditableColumn) => void;
   onRemove: () => void;
+  /**
+   * Structure lock: when the template already has spreadsheets, the column's
+   * type and required flag can't change and it can't be removed — but names,
+   * examples, descriptions, options, and AI hints stay editable.
+   */
+  locked?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -86,60 +93,76 @@ export function ColumnRow({
         isDragging && "opacity-80 shadow-lg ring-1 ring-primary/40",
       )}
     >
-      <div className="flex items-center gap-2 p-2">
-        <button
-          type="button"
-          className="cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-        <Input
-          value={column.name}
-          onChange={(e) => set("name", e.target.value)}
-          placeholder="Column name"
-          className="h-8 flex-1"
-        />
-        <Select value={column.type} onValueChange={(v) => set("type", v as ColumnType)}>
-          <SelectTrigger className="h-8 w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {COLUMN_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {COLUMN_TYPE_META[type].label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-1.5 px-1">
-          <Switch
-            checked={column.required}
-            onCheckedChange={(v) => set("required", v)}
-            aria-label="Required"
+      {/* Stacks on mobile (name on its own row) so the name field isn't crushed
+          by the type/required controls on a narrow screen. */}
+      <div className="flex flex-col gap-2 p-2 sm:flex-row sm:items-center">
+        <div className="flex flex-1 items-center gap-2">
+          <button
+            type="button"
+            className="cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+          <Input
+            value={column.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="Column name"
+            className="h-9 flex-1"
           />
-          <span className="hidden text-xs text-muted-foreground sm:inline">Req</span>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-          onClick={onRemove}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select
+            value={column.type}
+            onValueChange={(v) => set("type", v as ColumnType)}
+            disabled={locked}
+          >
+            <SelectTrigger
+              className="h-9 flex-1 sm:w-40 sm:flex-none"
+              title={locked ? "Type is locked while spreadsheets exist" : undefined}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {COLUMN_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {COLUMN_TYPE_META[type].label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-1.5 px-1">
+            <Switch
+              checked={column.required}
+              onCheckedChange={(v) => set("required", v)}
+              disabled={locked}
+              aria-label="Required"
+            />
+            <span className="text-xs text-muted-foreground">Req</span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+          {!locked && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
+              onClick={onRemove}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {expanded && (

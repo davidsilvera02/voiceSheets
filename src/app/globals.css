@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent mobile Safari from auto-zooming when a form field is focused: native
+   inputs must render at >= 16px on small screens. Unlayered so it beats
+   Tailwind's text-sm/text-xs utilities. Also makes small fields more legible. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 @layer base {
   /* Binaria Analytics palette — brand blue #2557E6 on light blue-gray surfaces. */
   :root {

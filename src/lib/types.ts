@@ -12,6 +12,7 @@ export interface TemplateDTO {
   description: string | null;
   icon: string | null;
   color: string | null;
+  voiceExample: string | null;
   status: "ACTIVE" | "ARCHIVED";
   columns: TemplateColumnDTO[];
   spreadsheetCount: number;
@@ -27,6 +28,8 @@ export interface SpreadsheetSummaryDTO {
   isFavorite: boolean;
   templateId: string | null;
   templateName: string | null;
+  /** The template's custom voice-dictation example, shown in voice entry. */
+  voiceExample: string | null;
   rowCount: number;
   columnCount: number;
   createdAt: string;

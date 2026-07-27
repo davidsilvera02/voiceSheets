@@ -48,13 +48,26 @@ model User {
   @@index([email])
 }
 
+// A workspace is the tenant boundary. When Clerk Organizations are active a
+// workspace maps 1:1 to a Clerk org (clerkOrgId), so a single subscription and
+// access decision covers everyone in that org. accessStatus is the entitlement
+// gate the vendor controls from the admin panel.
+enum AccessStatus {
+  PENDING // provisioned but not yet granted access (default)
+  ACTIVE // access granted; the org can use the app
+  SUSPENDED // access revoked (e.g. non-payment)
+}
+
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  ownerId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  ownerId      String
+  clerkOrgId   String?      @unique // null in dev-auth / personal mode
+  accessStatus AccessStatus @default(PENDING)
+  activatedAt  DateTime? // when access was last granted
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   owner        User          @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   memberships  Membership[]
@@ -63,6 +76,7 @@ model Workspace {
   auditLogs    AuditLog[]
 
   @@index([ownerId])
+  @@index([accessStatus])
 }
 
 enum MembershipRole {
@@ -108,11 +122,12 @@ enum ColumnType {
 model Template {
   id          String         @id @default(cuid())
   workspaceId String
-  name        String
-  description String?
-  icon        String? // emoji or lucide icon name
-  color       String? // tailwind/hsl accent
-  status      TemplateStatus @default(ACTIVE)
+  name         String
+  description  String?
+  icon         String? // emoji or lucide icon name
+  color        String? // tailwind/hsl accent
+  voiceExample String? // custom dictation example shown in the voice entry box
+  status       TemplateStatus @default(ACTIVE)
   createdById String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

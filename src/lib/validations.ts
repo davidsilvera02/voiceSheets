@@ -41,6 +41,7 @@ export const createTemplateSchema = z.object({
   description: z.string().max(2000).nullish(),
   icon: z.string().max(40).nullish(),
   color: z.string().max(40).nullish(),
+  voiceExample: z.string().max(1000).nullish(),
   columns: z.array(templateColumnInputSchema).min(1, "Add at least one column").max(200),
 });
 
@@ -51,6 +52,7 @@ export const updateTemplateSchema = z.object({
   description: z.string().max(2000).nullish(),
   icon: z.string().max(40).nullish(),
   color: z.string().max(40).nullish(),
+  voiceExample: z.string().max(1000).nullish(),
   status: z.enum(["ACTIVE", "ARCHIVED"]).optional(),
   columns: z.array(templateColumnInputSchema).max(200).optional(),
 });

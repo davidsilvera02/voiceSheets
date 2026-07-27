@@ -120,12 +120,20 @@ export function CreateSpreadsheetDialog({
       } else {
         const buffer = await file.arrayBuffer();
         const wb = XLSX.read(buffer, { type: "array" });
-        const sheet = wb.Sheets[wb.SheetNames[0]!];
-        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet!, { defval: "" });
-        headers = json.length > 0 ? Object.keys(json[0]!) : [];
-        parsedRows = json.map((r) =>
-          Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v ?? "")])),
-        );
+        const sheet = wb.Sheets[wb.SheetNames[0]!]!;
+        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+        if (json.length > 0) {
+          headers = Object.keys(json[0]!);
+          parsedRows = json.map((r) =>
+            Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v ?? "")])),
+          );
+        } else {
+          // Headers-only sheet: sheet_to_json yields no rows and thus no keys,
+          // so read the first row directly to recover the column headers.
+          const aoa = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
+          headers = (aoa[0] ?? []).map((h) => String(h ?? ""));
+          parsedRows = [];
+        }
       }
       const kept = headers.filter((h) => h && h.trim());
       if (kept.length === 0) {
@@ -352,10 +360,12 @@ export function CreateSpreadsheetDialog({
               <TabsTrigger value="template">From template</TabsTrigger>
               <TabsTrigger value="import">Import file</TabsTrigger>
             </TabsList>
-            <TabsContent value="template" className="pt-1">
+            {/* A shared min-height keeps the dialog the same size on both tabs,
+                so switching doesn't resize and re-center it under the cursor. */}
+            <TabsContent value="template" className="min-h-[16.5rem] pt-1">
               {templateForm}
             </TabsContent>
-            <TabsContent value="import" className="pt-1">
+            <TabsContent value="import" className="min-h-[16.5rem] pt-1">
               {importForm}
             </TabsContent>
           </Tabs>

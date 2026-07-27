@@ -7,11 +7,14 @@ import {
   FileSpreadsheet,
   LayoutDashboard,
   LayoutTemplate,
+  LogOut,
   Menu,
   Search,
   Settings,
+  Shield,
   X,
 } from "lucide-react";
+import { useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +22,14 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { CommandPalette } from "@/components/search/command-palette";
 import { VoiceSheetsMark } from "@/components/brand/voicesheets-mark";
@@ -37,16 +48,34 @@ const NAV = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+/**
+ * Sign-out menu item. Only rendered when Clerk is active, so `useClerk()` always
+ * runs inside a mounted ClerkProvider (it would throw in dev-auth mode).
+ */
+function SignOutItem() {
+  const { signOut } = useClerk();
+  return (
+    <DropdownMenuItem onSelect={() => void signOut({ redirectUrl: "/sign-in" })}>
+      <LogOut className="h-4 w-4" /> Sign out
+    </DropdownMenuItem>
+  );
+}
+
 export function AppShell({
   user,
   clerkEnabled,
+  isSuperAdmin = false,
   children,
 }: {
   user: ShellUser;
   clerkEnabled: boolean;
+  isSuperAdmin?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const nav = isSuperAdmin
+    ? [...NAV, { href: "/admin", label: "Admin", icon: Shield }]
+    : NAV;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -72,13 +101,13 @@ export function AppShell({
       .toUpperCase() || "U";
 
   const sidebar = (
-    <div className="flex h-full flex-col gap-1 p-3">
+    <div className="flex h-full flex-col gap-1 overflow-y-auto p-3">
       <Link href="/dashboard" className="mb-4 flex items-center gap-2 px-2 py-1">
         <VoiceSheetsMark className="h-7 w-7" />
         <span className="font-display text-lg font-bold tracking-tight">VoiceSheets</span>
       </Link>
       <nav className="flex flex-col gap-0.5">
-        {NAV.map((item) => {
+        {nav.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
@@ -120,8 +149,8 @@ export function AppShell({
   );
 
   return (
-    <div className="vs-app-bg flex min-h-screen w-full bg-muted/40">
-      {/* Desktop sidebar */}
+    <div className="vs-app-bg flex h-screen w-full overflow-hidden bg-muted/40">
+      {/* Desktop sidebar — fixed full height; the page (main) is the scroll area. */}
       <aside className="hidden w-60 shrink-0 border-r bg-background md:block">{sidebar}</aside>
 
       {/* Mobile sidebar */}
@@ -162,22 +191,38 @@ export function AppShell({
           </button>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
-            <div className="flex items-center gap-2 pl-1">
-              <Avatar>
-                {user.imageUrl && <AvatarImage src={user.imageUrl} alt={user.name ?? user.email} />}
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <div className="hidden text-sm leading-tight sm:block">
-                <div className="font-medium">{user.name ?? "You"}</div>
-                <div className="text-xs text-muted-foreground">
-                  {clerkEnabled ? user.email : "Dev mode"}
-                </div>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-accent/60"
+                >
+                  <Avatar>
+                    {user.imageUrl && <AvatarImage src={user.imageUrl} alt={user.name ?? "You"} />}
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-sm font-medium sm:block">{user.name ?? "You"}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="truncate">{user.name ?? "You"}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="h-4 w-4" /> Settings
+                  </Link>
+                </DropdownMenuItem>
+                {clerkEnabled ? (
+                  <SignOutItem />
+                ) : (
+                  <DropdownMenuItem disabled>Dev mode — not signed in</DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
       </div>
 
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />

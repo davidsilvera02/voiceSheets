@@ -184,7 +184,7 @@ function SheetCard({
   return (
     <>
     <Card className="flex flex-col">
-      <CardHeader className="pb-2">
+      <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base">
             <Link href={`/spreadsheets/${sheet.id}`} className="hover:underline">
@@ -252,9 +252,9 @@ function SheetCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="mt-auto flex items-center gap-2 overflow-hidden text-xs text-muted-foreground">
+      <CardContent className="mt-auto flex items-center gap-2 overflow-hidden p-4 pt-0 text-xs text-muted-foreground">
         {sheet.templateName && (
-          <Badge variant="secondary" className="min-w-0 max-w-[50%] font-normal">
+          <Badge variant="secondary" className="min-w-0 shrink truncate font-normal">
             {sheet.templateName}
           </Badge>
         )}

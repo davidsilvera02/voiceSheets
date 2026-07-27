@@ -35,16 +35,22 @@ import { useExtractRow } from "@/hooks/use-ai";
 import { useCreateRow } from "@/hooks/use-rows";
 import { ApiClientError } from "@/lib/api-client";
 
+const DEFAULT_VOICE_EXAMPLE =
+  "e.g. Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday.";
+
 export function VoiceEntryDialog({
   open,
   onOpenChange,
   spreadsheetId,
   columns,
+  exampleInstruction,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   spreadsheetId: string;
   columns: ColumnDefinition[];
+  /** The template's custom dictation example, shown as the transcript hint. */
+  exampleInstruction?: string | null;
 }) {
   const me = useMe();
   const extract = useExtractRow(spreadsheetId);
@@ -66,15 +72,11 @@ export function VoiceEntryDialog({
     whisperEnabled: me.data?.capabilities.whisper ?? false,
     onTranscript: (text) => {
       if (!text || !openRef.current) return;
-      // Once a row is drafted, further recordings are treated as corrections.
-      // Otherwise: set the transcript and immediately draft the row so the
-      // transcript and the generated row appear together (single commit).
-      if (result) {
-        void runCorrection(text);
-      } else {
-        setTranscript(text.trim());
-        void generate(text.trim());
-      }
+      // Every recording is a clean start: set the transcript and draft a fresh
+      // row so the transcript and generated row appear together (single commit).
+      // (Starting a new recording already cleared any previous draft.)
+      setTranscript(text.trim());
+      void generate(text.trim());
     },
   });
 
@@ -120,25 +122,20 @@ export function VoiceEntryDialog({
     }
   }
 
-  async function runCorrection(correction: string) {
-    try {
-      const r = await extract.mutateAsync({ transcript: correction, current: values });
-      applyResult(r);
-      toast.success("Applied your correction");
-    } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Correction failed");
-    }
-  }
-
   function setField(key: string, value: CellValue) {
     setValues((v) => ({ ...v, [key]: value }));
     setTouched((t) => new Set(t).add(key));
   }
 
   async function commit() {
+    // Coerce raw field strings to their native types now (inputs keep the raw
+    // string while typing so spaces aren't stripped mid-word).
+    const coerced: Record<string, CellValue> = {};
+    for (const c of columns) coerced[c.key] = coerceValue(c, values[c.key]);
+
     // Client-side required-field guard before committing.
     const missingRequired = columns.filter(
-      (c) => c.required && (values[c.key] === null || values[c.key] === "" || values[c.key] === undefined),
+      (c) => c.required && (coerced[c.key] === null || coerced[c.key] === "" || coerced[c.key] === undefined),
     );
     if (missingRequired.length > 0) {
       return toast.error(`Please fill: ${missingRequired.map((c) => c.name).join(", ")}`);
@@ -152,7 +149,7 @@ export function VoiceEntryDialog({
       };
     }
     try {
-      await createRow.mutateAsync({ values, source: "VOICE", meta });
+      await createRow.mutateAsync({ values: coerced, source: "VOICE", meta });
       toast.success("Row added from voice");
       reset();
       onOpenChange(false);
@@ -164,6 +161,7 @@ export function VoiceEntryDialog({
   const isRecording = recorder.status === "recording";
   const isTranscribing = recorder.status === "transcribing";
   const generating = extract.isPending;
+  const placeholder = exampleInstruction?.trim() || DEFAULT_VOICE_EXAMPLE;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -188,7 +186,7 @@ export function VoiceEntryDialog({
                 if (isRecording) {
                   recorder.stop();
                 } else {
-                  if (!result) setTranscript(""); // clear before a fresh dictation
+                  reset(); // clean slate: every recording starts fresh
                   recorder.start();
                 }
               }}
@@ -228,7 +226,7 @@ export function VoiceEntryDialog({
                 : isTranscribing
                   ? "Transcribing…"
                   : result
-                    ? "Record a correction, e.g. “No, the quantity is thirty.”"
+                    ? "Review below — or record again to start over."
                     : "Click to start dictating."}
           </p>
           {recorder.error && <p className="text-xs text-destructive">{recorder.error}</p>}
@@ -245,7 +243,7 @@ export function VoiceEntryDialog({
             <Textarea
               value={transcript}
               onChange={(e) => setTranscript(e.target.value)}
-              placeholder="e.g. Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday."
+              placeholder={placeholder}
               rows={3}
             />
           )}
@@ -392,7 +390,9 @@ function ReviewField({
         ) : column.type === "LONG_TEXT" ? (
           <Textarea
             value={raw}
-            onChange={(e) => onChange(coerceValue(column, e.target.value))}
+            // Keep the raw string while typing — coercion (which trims) happens
+            // at commit, so spaces between words aren't stripped mid-word.
+            onChange={(e) => onChange(e.target.value)}
             rows={2}
           />
         ) : (
@@ -400,7 +400,7 @@ function ReviewField({
             className="h-8"
             type={column.type === "DATE" ? "date" : "text"}
             value={raw}
-            onChange={(e) => onChange(coerceValue(column, e.target.value))}
+            onChange={(e) => onChange(e.target.value)}
           />
         )}
       </div>

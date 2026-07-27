@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
-import { UnauthorizedError } from "@/server/auth";
+import { NoOrganizationError, UnauthorizedError } from "@/server/auth";
 
 /** Base class for expected, client-facing application errors. */
 export class AppError extends Error {
@@ -96,6 +96,12 @@ export function toErrorResponse(error: unknown): NextResponse {
     return NextResponse.json(
       { error: { message: error.message, code: "unauthorized" } },
       { status: 401 },
+    );
+  }
+  if (error instanceof NoOrganizationError) {
+    return NextResponse.json(
+      { error: { message: error.message, code: "no_organization" } },
+      { status: 403 },
     );
   }
   if (error instanceof ZodError) {

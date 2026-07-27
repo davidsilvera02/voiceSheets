@@ -150,9 +150,12 @@ export function useVoiceRecorder({
       }
       setStatus("transcribing");
       try {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        // Use the recorder's actual format (webm on Chrome/Firefox, mp4 on
+        // Safari/iOS) so the server can label the upload correctly.
+        const mime = recorder.mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: mime });
         const form = new FormData();
-        form.append("audio", blob, "recording.webm");
+        form.append("audio", blob, "recording");
         const res = await fetch("/api/transcribe", { method: "POST", body: form });
         if (!res.ok) {
           const body = await res.json().catch(() => null);

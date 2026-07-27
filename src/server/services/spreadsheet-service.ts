@@ -15,7 +15,7 @@ import type { z } from "zod";
 import type { createSpreadsheetSchema, updateSpreadsheetSchema } from "@/lib/validations";
 
 const summaryInclude = {
-  template: { select: { name: true } },
+  template: { select: { name: true, voiceExample: true } },
   _count: { select: { rows: { where: { deletedAt: null } } } },
 } satisfies Prisma.SpreadsheetInclude;
 

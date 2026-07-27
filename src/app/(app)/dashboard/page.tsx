@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
+  ChevronRight,
   FileSpreadsheet,
   LayoutTemplate,
+  Mic,
   Plus,
   Sparkles,
   Star,
@@ -15,15 +18,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useSpreadsheets } from "@/hooks/use-spreadsheets";
 import { useTemplates } from "@/hooks/use-templates";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const recent = useSpreadsheets();
   const favorites = useSpreadsheets({ favorite: true });
   const templates = useTemplates({ status: "ACTIVE" });
-  // Most recently edited sheet — the voice card jumps straight into it.
-  const latest = recent.data?.data[0];
+  const sheets = recent.data?.data ?? [];
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 p-6">
@@ -59,24 +70,57 @@ export default function DashboardPage() {
           value={templates.data?.meta.total}
           href="/templates"
         />
-        <Link
-          href={latest ? `/spreadsheets/${latest.id}?voice=1` : "/spreadsheets?new=1"}
-          className="block h-full"
-        >
-          <Card className="h-full bg-gradient-to-br from-primary/10 to-transparent transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
-            <CardContent className="flex h-full items-center gap-3 p-5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium">Voice entry</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {latest ? `Dictate a row into ${latest.name}` : "Create a spreadsheet to start dictating"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+        {sheets.length > 0 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="block h-full w-full text-left">
+                <Card className="h-full bg-gradient-to-br from-primary/10 to-transparent transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
+                  <CardContent className="flex h-full items-center gap-3 p-5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">Voice entry</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        Choose a spreadsheet to dictate into
+                      </p>
+                    </div>
+                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuLabel>Dictate a row into…</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {sheets.slice(0, 8).map((s) => (
+                <DropdownMenuItem
+                  key={s.id}
+                  onSelect={() => router.push(`/spreadsheets/${s.id}?voice=1`)}
+                >
+                  <Mic className="h-4 w-4 text-primary" />
+                  <span className="truncate">{s.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link href="/spreadsheets?new=1" className="block h-full">
+            <Card className="h-full bg-gradient-to-br from-primary/10 to-transparent transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
+              <CardContent className="flex h-full items-center gap-3 p-5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Voice entry</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    Create a spreadsheet to start dictating
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
       </div>
 
       <section className="space-y-3">
@@ -179,7 +223,7 @@ function SheetCard({
         </CardHeader>
         <CardContent className="flex items-center gap-2 overflow-hidden p-4 pt-0 text-xs text-muted-foreground">
           {sheet.templateName && (
-            <Badge variant="secondary" className="min-w-0 max-w-[50%] font-normal">
+            <Badge variant="secondary" className="min-w-0 shrink truncate font-normal">
               {sheet.templateName}
             </Badge>
           )}

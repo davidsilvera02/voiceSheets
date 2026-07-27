@@ -22,6 +22,20 @@ function anthropic(): Anthropic {
 const FAST_CAPABLE_MODELS = new Set(["claude-opus-4-8", "claude-opus-4-7"]);
 let fastModeEnabled = true;
 
+// The `output_config.effort` parameter is only accepted by Opus 4.5+, Opus/
+// Sonnet 4.6, Sonnet 5, and Fable 5. Haiku 4.5 and Sonnet 4.5 reject it with a
+// 400 ("This model does not support the effort parameter"), so we only send it
+// for models that support it.
+const EFFORT_CAPABLE_MODELS = new Set([
+  "claude-fable-5",
+  "claude-opus-4-8",
+  "claude-opus-4-7",
+  "claude-opus-4-6",
+  "claude-opus-4-5",
+  "claude-sonnet-5",
+  "claude-sonnet-4-6",
+]);
+
 function textOf(message: { content: Array<{ type: string; text?: string }> }): string {
   return message.content
     .filter((b) => b.type === "text")
@@ -40,8 +54,11 @@ async function createExtractionMessage(messages: Anthropic.MessageParam[]): Prom
     system: SYSTEM_PROMPT,
     messages,
     // Extraction is a simple, well-specified task — low effort is plenty and
-    // markedly faster than the default (high).
-    output_config: { effort: "low" as const },
+    // markedly faster than the default. Only sent for models that accept it
+    // (Haiku 4.5 rejects `effort` with a 400).
+    ...(EFFORT_CAPABLE_MODELS.has(env.ANTHROPIC_MODEL)
+      ? { output_config: { effort: "low" as const } }
+      : {}),
   };
   if (fastModeEnabled && FAST_CAPABLE_MODELS.has(env.ANTHROPIC_MODEL)) {
     try {

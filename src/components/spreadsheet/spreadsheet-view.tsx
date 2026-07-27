@@ -279,6 +279,7 @@ export function SpreadsheetView({ id }: { id: string }) {
         onOpenChange={setVoiceOpen}
         spreadsheetId={id}
         columns={visibleColumns}
+        exampleInstruction={sheet.voiceExample}
       />
 
       <ImportDialog
