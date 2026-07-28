@@ -1,7 +1,7 @@
 import type { AccessStatus } from "@prisma/client";
 import { Building2, Clock, ShieldX } from "lucide-react";
 import { VoiceSheetsMark } from "@/components/brand/voicesheets-mark";
-import { GateSignOut, OrgPicker } from "@/components/layout/gate-actions";
+import { GateSignOut } from "@/components/layout/gate-actions";
 
 function Shell({
   icon,
@@ -28,16 +28,15 @@ function Shell({
   );
 }
 
-/** Shown when a Clerk user isn't a member of any active organization yet. */
+/** Shown when a Clerk user isn't a member of any organization yet. */
 export function NoOrganizationScreen() {
   return (
     <Shell icon={<Building2 className="h-5 w-5" />} title="No organization yet">
       <p>
-        Create an organization to get started, or select one you&apos;ve been invited
-        to. New organizations are activated by an administrator before use.
+        Your account isn&apos;t part of an organization yet. Ask your administrator to
+        invite you, or contact Binaria Analytics to get your team set up.
       </p>
-      <div className="mt-5 flex flex-col items-center gap-3">
-        <OrgPicker />
+      <div className="mt-5 flex justify-center">
         <GateSignOut />
       </div>
     </Shell>

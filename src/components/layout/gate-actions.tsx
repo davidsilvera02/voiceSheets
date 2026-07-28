@@ -1,6 +1,6 @@
 "use client";
 
-import { OrganizationSwitcher, SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,21 +15,5 @@ export function GateSignOut() {
         <LogOut className="h-4 w-4" /> Sign out
       </Button>
     </SignOutButton>
-  );
-}
-
-/**
- * Create a new organization, or select one you've been invited to. Selecting or
- * creating one makes it the active org, which unblocks the app. Requires
- * Organizations to be enabled in the Clerk dashboard.
- */
-export function OrgPicker() {
-  return (
-    <OrganizationSwitcher
-      hidePersonal
-      afterCreateOrganizationUrl="/dashboard"
-      afterSelectOrganizationUrl="/dashboard"
-      appearance={{ elements: { rootBox: "flex justify-center" } }}
-    />
   );
 }

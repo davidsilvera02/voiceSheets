@@ -181,11 +181,37 @@ async function currentIdentity(): Promise<Identity> {
     const { auth, clerkClient } = await import("@clerk/nextjs/server");
     const { userId, orgId, orgRole, orgSlug } = auth();
     if (!userId) throw new UnauthorizedError();
-    const clerkUser = await clerkClient().users.getUser(userId);
+    const clerk = clerkClient();
+    const clerkUser = await clerk.users.getUser(userId);
     const email =
       clerkUser.primaryEmailAddress?.emailAddress ??
       clerkUser.emailAddresses[0]?.emailAddress ??
       `${userId}@clerk.local`;
+
+    // Resolve the organization. Prefer the session's active org; otherwise fall
+    // back to the user's first org membership. Org creation is disabled (admins
+    // create orgs in Clerk and invite members), so an invited user should just
+    // land in their org on sign-in without having to pick it.
+    let resolvedOrgId: string | null = orgId ?? null;
+    let resolvedOrgName: string | null = orgSlug ?? null;
+    let resolvedOrgRole: string | null = orgRole ?? null;
+    if (!resolvedOrgId) {
+      try {
+        const memberships = await clerk.users.getOrganizationMembershipList({
+          userId,
+          limit: 1,
+        });
+        const first = memberships.data[0];
+        if (first) {
+          resolvedOrgId = first.organization.id;
+          resolvedOrgName = first.organization.name || first.organization.slug || null;
+          resolvedOrgRole = first.role ?? null;
+        }
+      } catch (error) {
+        console.error("[voicesheets] Failed to resolve org membership:", error);
+      }
+    }
+
     return {
       clerkId: userId,
       email,
@@ -194,9 +220,9 @@ async function currentIdentity(): Promise<Identity> {
         clerkUser.username ||
         null,
       imageUrl: clerkUser.imageUrl ?? null,
-      orgId: orgId ?? null,
-      orgName: orgSlug ?? null,
-      orgRole: orgRole ?? null,
+      orgId: resolvedOrgId,
+      orgName: resolvedOrgName,
+      orgRole: resolvedOrgRole,
     };
   }
   return { ...DEV_USER, isDev: true };
