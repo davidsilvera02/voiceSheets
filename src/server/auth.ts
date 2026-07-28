@@ -122,13 +122,18 @@ async function resolveContext(identity: Identity): Promise<AuthContext> {
   }
 
   // --- Clerk user with no active organization -----------------------------
-  if (!identity.isDev) {
+  // Regular users must create or join an org. Super-admins (the vendor) are the
+  // exception: they get a personal workspace so they have full access to the app
+  // *and* the /admin panel without belonging to a customer org.
+  if (!identity.isDev && !superAdmin) {
     throw new NoOrganizationError();
   }
 
   // --- Personal / dev workspace (always active) ---------------------------
+  // Scoped to a personal (non-org) workspace so a super-admin who also belongs
+  // to an org still lands on their own workspace here.
   let membership = await prisma.membership.findFirst({
-    where: { userId: user.id },
+    where: { userId: user.id, workspace: { clerkOrgId: null } },
     include: { workspace: true },
     orderBy: { createdAt: "asc" },
   });

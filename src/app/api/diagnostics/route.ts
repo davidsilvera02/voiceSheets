@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { env, isClerkConfigured } from "@/lib/env";
-import { getAuthContext, UnauthorizedError } from "@/server/auth";
+import { getActor, getAuthContext, UnauthorizedError } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +129,22 @@ export async function GET() {
       const { clerkClient } = await import("@clerk/nextjs/server");
       const list = await clerkClient().users.getUserList({ limit: 1 });
       return { reachable: true, totalUsers: list.totalCount };
+    }));
+
+    // Is the signed-in user recognized as a super-admin? Confirms the
+    // VOICESHEETS_SUPER_ADMINS env value matches the account's login email.
+    checks.push(await check("auth.superAdmin", async () => {
+      try {
+        const actor = await getActor();
+        return {
+          signedInEmail: actor.user.email,
+          isSuperAdmin: actor.isSuperAdmin,
+          configuredAdminCount: env.SUPER_ADMIN_EMAILS.length,
+        };
+      } catch (error) {
+        if (error instanceof UnauthorizedError) return "not signed in";
+        throw error;
+      }
     }));
   }
 
