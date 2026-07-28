@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { Building2, Check, Clock, ShieldX } from "lucide-react";
-import { apiGet, apiPost } from "@/lib/api-client";
+import { Building2, Check, ShieldX, Trash2, XCircle } from "lucide-react";
+import { apiDelete, apiGet, apiPost } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 
 type AccessStatus = "PENDING" | "ACTIVE" | "SUSPENDED";
@@ -34,6 +36,7 @@ const STATUS_BADGE: Record<AccessStatus, { label: string; variant: "default" | "
 
 export function AdminWorkspaces() {
   const qc = useQueryClient();
+  const [deleteTarget, setDeleteTarget] = useState<AdminWorkspaceRow | null>(null);
   const query = useQuery({
     queryKey: ["admin", "workspaces"],
     queryFn: () => apiGet<AdminWorkspaceRow[]>("/api/admin/workspaces"),
@@ -53,6 +56,15 @@ export function AdminWorkspaces() {
       qc.invalidateQueries({ queryKey: ["admin", "workspaces"] });
     },
     onError: (error: Error) => toast.error(error.message || "Update failed"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => apiDelete(`/api/admin/workspaces/${id}`),
+    onSuccess: () => {
+      toast.success("Organization removed");
+      qc.invalidateQueries({ queryKey: ["admin", "workspaces"] });
+    },
+    onError: (error: Error) => toast.error(error.message || "Delete failed"),
   });
 
   if (query.isLoading) {
@@ -134,6 +146,16 @@ export function AdminWorkspaces() {
                         <Check className="h-3.5 w-3.5" /> Activate
                       </Button>
                     )}
+                    {w.accessStatus === "PENDING" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => mutation.mutate({ id: w.id, status: "SUSPENDED" })}
+                      >
+                        <XCircle className="h-3.5 w-3.5" /> Reject
+                      </Button>
+                    )}
                     {w.accessStatus === "ACTIVE" && (
                       <Button
                         size="sm"
@@ -144,16 +166,15 @@ export function AdminWorkspaces() {
                         <ShieldX className="h-3.5 w-3.5" /> Suspend
                       </Button>
                     )}
-                    {w.accessStatus === "SUSPENDED" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={busy}
-                        onClick={() => mutation.mutate({ id: w.id, status: "PENDING" })}
-                      >
-                        <Clock className="h-3.5 w-3.5" /> Reset
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-destructive"
+                      disabled={busy || (remove.isPending && remove.variables === w.id)}
+                      onClick={() => setDeleteTarget(w)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -161,6 +182,19 @@ export function AdminWorkspaces() {
           })}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title={`Delete "${deleteTarget?.name}"?`}
+        description="This permanently deletes this organization's workspace and all its templates, spreadsheets, and rows. If the organization still exists in Clerk and its members sign in again, a fresh pending workspace will be created."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={async () => {
+          if (deleteTarget) await remove.mutateAsync(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

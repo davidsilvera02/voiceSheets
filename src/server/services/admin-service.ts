@@ -47,6 +47,16 @@ export async function listWorkspacesForAdmin(): Promise<AdminWorkspaceRow[]> {
   }));
 }
 
+/**
+ * Delete a workspace and all its data (cascades to memberships, templates,
+ * spreadsheets, rows). Note: this is app-side only — the Clerk organization
+ * still exists, so if its members sign in again a fresh PENDING workspace is
+ * recreated. To remove an org permanently, delete it in Clerk too.
+ */
+export async function deleteWorkspaceForAdmin(workspaceId: string) {
+  await prisma.workspace.delete({ where: { id: workspaceId } });
+}
+
 /** Grant, revoke, or reset an organization's access to the app. */
 export async function setWorkspaceAccess(workspaceId: string, status: AccessStatus) {
   return prisma.workspace.update({
