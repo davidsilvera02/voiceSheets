@@ -34,10 +34,10 @@ export const env = {
   // claude-sonnet-5 for more headroom, claude-opus-4-8 for max capability).
   ANTHROPIC_MODEL: str(process.env.ANTHROPIC_MODEL) || "claude-haiku-4-5",
 
-  // OpenAI speech-to-text. gpt-4o-mini-transcribe is ~40% faster than whisper-1
-  // at the same accuracy (measured ~1.2s vs ~2.0s on a ~4s clip).
+  // OpenAI speech-to-text. Override with WHISPER_MODEL (e.g.
+  // gpt-4o-mini-transcribe, which is faster).
   OPENAI_API_KEY: str(process.env.OPENAI_API_KEY),
-  WHISPER_MODEL: str(process.env.WHISPER_MODEL) || "gpt-4o-mini-transcribe",
+  WHISPER_MODEL: str(process.env.WHISPER_MODEL) || "whisper-1",
 
   FORCE_DEV_AUTH: str(process.env.VOICESHEETS_FORCE_DEV_AUTH) === "true",
   NODE_ENV: process.env.NODE_ENV ?? "development",
