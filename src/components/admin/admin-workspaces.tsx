@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { Building2, Check, Clock, ShieldCheck, ShieldX, Trash2, XCircle } from "lucide-react";
+import { Building2, Check, Clock, ShieldCheck, ShieldX, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { apiDelete, apiGet, apiPost } from "@/lib/api-client";
+import { apiGet, apiPost } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 
 type AccessStatus = "PENDING" | "ACTIVE" | "SUSPENDED";
@@ -17,6 +15,7 @@ type AccessStatus = "PENDING" | "ACTIVE" | "SUSPENDED";
 interface AdminWorkspaceRow {
   id: string;
   name: string;
+  imageUrl: string | null;
   clerkOrgId: string | null;
   accessStatus: AccessStatus;
   activatedAt: string | null;
@@ -48,7 +47,7 @@ const STATUS_META: Record<
   },
   SUSPENDED: {
     section: "Suspended",
-    hint: "Access revoked — reactivate or delete.",
+    hint: "Access revoked — reactivate when ready.",
     icon: ShieldX,
     iconClass: "bg-destructive/10 text-destructive",
     dot: "bg-destructive",
@@ -59,7 +58,6 @@ const SECTION_ORDER: AccessStatus[] = ["PENDING", "ACTIVE", "SUSPENDED"];
 
 export function AdminWorkspaces() {
   const qc = useQueryClient();
-  const [deleteTarget, setDeleteTarget] = useState<AdminWorkspaceRow | null>(null);
   const query = useQuery({
     queryKey: ["admin", "workspaces"],
     queryFn: () => apiGet<AdminWorkspaceRow[]>("/api/admin/workspaces"),
@@ -79,15 +77,6 @@ export function AdminWorkspaces() {
       qc.invalidateQueries({ queryKey: ["admin", "workspaces"] });
     },
     onError: (error: Error) => toast.error(error.message || "Update failed"),
-  });
-
-  const remove = useMutation({
-    mutationFn: (id: string) => apiDelete(`/api/admin/workspaces/${id}`),
-    onSuccess: () => {
-      toast.success("Organization removed");
-      qc.invalidateQueries({ queryKey: ["admin", "workspaces"] });
-    },
-    onError: (error: Error) => toast.error(error.message || "Delete failed"),
   });
 
   if (query.isLoading) {
@@ -114,15 +103,12 @@ export function AdminWorkspaces() {
       <EmptyState
         icon={Building2}
         title="No organizations yet"
-        description="Organizations appear here as soon as their members first sign in."
+        description="Create an organization in Clerk and invite members — it appears here once someone signs in."
       />
     );
   }
 
-  const busyId =
-    (setAccess.isPending && setAccess.variables?.id) ||
-    (remove.isPending && remove.variables) ||
-    undefined;
+  const busyId = setAccess.isPending ? setAccess.variables?.id : undefined;
 
   const grouped = SECTION_ORDER.map((status) => ({
     status,
@@ -150,26 +136,12 @@ export function AdminWorkspaces() {
                   workspace={w}
                   busy={busyId === w.id}
                   onSetAccess={(s) => setAccess.mutate({ id: w.id, status: s })}
-                  onDelete={() => setDeleteTarget(w)}
                 />
               ))}
             </div>
           </section>
         );
       })}
-
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title={`Delete "${deleteTarget?.name}"?`}
-        description="This permanently deletes this organization's workspace and all its templates, spreadsheets, and rows. If the organization still exists in Clerk and its members sign in again, a fresh pending workspace will be created."
-        confirmLabel="Delete"
-        destructive
-        onConfirm={async () => {
-          if (deleteTarget) await remove.mutateAsync(deleteTarget.id);
-          setDeleteTarget(null);
-        }}
-      />
     </div>
   );
 }
@@ -178,12 +150,10 @@ function WorkspaceRow({
   workspace: w,
   busy,
   onSetAccess,
-  onDelete,
 }: {
   workspace: AdminWorkspaceRow;
   busy: boolean;
   onSetAccess: (status: AccessStatus) => void;
-  onDelete: () => void;
 }) {
   const meta = STATUS_META[w.accessStatus];
   const Icon = meta.icon;
@@ -199,23 +169,26 @@ function WorkspaceRow({
   return (
     <div className="flex flex-col gap-3 rounded-xl border bg-card p-3.5 shadow-soft transition-colors hover:border-border sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
-        <div
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-            meta.iconClass,
-          )}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">
-            {w.name}
-            {!w.clerkOrgId && (
-              <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal uppercase tracking-wide text-muted-foreground">
-                personal
-              </span>
+        {w.imageUrl ? (
+          // Clerk-hosted org logo; plain img avoids next/image domain config.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={w.imageUrl}
+            alt=""
+            className="h-9 w-9 shrink-0 rounded-lg object-cover"
+          />
+        ) : (
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+              meta.iconClass,
             )}
-          </p>
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{w.name}</p>
           <p className="truncate text-xs text-muted-foreground">{metaBits.join(" · ")}</p>
         </div>
       </div>
@@ -236,15 +209,6 @@ function WorkspaceRow({
             <ShieldX className="h-3.5 w-3.5" /> Suspend
           </Button>
         )}
-        <Button
-          size="sm"
-          variant="ghost"
-          className="text-muted-foreground hover:text-destructive"
-          disabled={busy}
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3.5 w-3.5" /> Delete
-        </Button>
       </div>
     </div>
   );
