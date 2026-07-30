@@ -47,7 +47,7 @@ export default function SettingsPage() {
   }
 
   const s = settings.data;
-  const ai = s.aiPreferences as { autoSuggest?: boolean; cleanupOnImport?: boolean };
+  const ai = s.aiPreferences as { autoSuggest?: boolean };
   const exp = s.exportDefaults as { format?: string; includeHidden?: boolean };
 
   return (
@@ -170,12 +170,6 @@ export default function SettingsPage() {
             description="Suggest previously entered vendors and products while typing."
             checked={ai.autoSuggest ?? true}
             onChange={(v) => save({ aiPreferences: { ...ai, autoSuggest: v } })}
-          />
-          <ToggleRow
-            label="Clean up on import"
-            description="Standardize vendor names and formatting when importing rows."
-            checked={ai.cleanupOnImport ?? false}
-            onChange={(v) => save({ aiPreferences: { ...ai, cleanupOnImport: v } })}
           />
         </CardContent>
       </Card>

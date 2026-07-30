@@ -27,12 +27,8 @@ export const env = {
   CLERK_PUBLISHABLE_KEY: str(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY),
   CLERK_SECRET_KEY: str(process.env.CLERK_SECRET_KEY),
 
-  // Anthropic
+  // Anthropic API key — used only when ROW_MODEL is a claude-* model.
   ANTHROPIC_API_KEY: str(process.env.ANTHROPIC_API_KEY),
-  // Haiku 4.5 is the fastest model and plenty for row extraction, which is a
-  // simple, well-specified task. Override with ANTHROPIC_MODEL (e.g.
-  // claude-sonnet-5 for more headroom, claude-opus-4-8 for max capability).
-  ANTHROPIC_MODEL: str(process.env.ANTHROPIC_MODEL) || "claude-haiku-4-5",
 
   // OpenAI speech-to-text. Override with WHISPER_MODEL (e.g.
   // gpt-4o-mini-transcribe, which is faster).

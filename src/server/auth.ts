@@ -1,5 +1,6 @@
 import "server-only";
-import type { AccessStatus, MembershipRole, User, Workspace } from "@prisma/client";
+import { cache } from "react";
+import type { AccessStatus, MembershipRole, Prisma, User, Workspace } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { env, isClerkConfigured, isSuperAdmin } from "@/lib/env";
 import { slugify } from "@/lib/utils";
@@ -228,18 +229,78 @@ async function currentIdentity(): Promise<Identity> {
   return { ...DEV_USER, isDev: true };
 }
 
-/** Full workspace-scoped auth context. Used by the app and its API routes. */
-export async function getAuthContext(): Promise<AuthContext> {
-  return resolveContext(await currentIdentity());
+/**
+ * Fast path: resolve the auth context entirely from our own database — one
+ * indexed query, no Clerk API calls, no writes. Returns null when the user or
+ * their workspace hasn't been provisioned yet (first sign-in / a new org),
+ * which falls through to the slow provisioning path. This is what makes normal
+ * requests (save/delete/load) near-instant instead of paying ~1s of Clerk API +
+ * upsert overhead on every call.
+ */
+async function resolveContextFromDb(
+  where: Prisma.UserWhereUniqueInput,
+  orgId: string | null,
+): Promise<AuthContext | null> {
+  const found = await prisma.user.findUnique({
+    where,
+    include: {
+      memberships: { include: { workspace: true }, orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!found) return null;
+  const { memberships, ...user } = found;
+  const membership = orgId
+    ? memberships.find((m) => m.workspace.clerkOrgId === orgId)
+    : // No active org: prefer an org workspace, else the personal one.
+      memberships.find((m) => m.workspace.clerkOrgId !== null) ?? memberships[0];
+  if (!membership) return null; // needs provisioning → slow path
+  return {
+    user,
+    workspace: membership.workspace,
+    role: membership.role,
+    accessStatus: membership.workspace.accessStatus,
+    isSuperAdmin: isSuperAdmin(user.email),
+  };
 }
 
 /**
- * Resolve just the current user + super-admin flag, without requiring an
- * organization or workspace. Used by the admin panel and its API.
+ * Full workspace-scoped auth context. Used by the app and its API routes.
+ * Cached per request (React `cache`) so a page's layout + page + actions share
+ * one resolution.
  */
-export async function getActor(): Promise<Actor> {
-  return resolveActor(await currentIdentity());
-}
+export const getAuthContext = cache(async (): Promise<AuthContext> => {
+  if (isClerkConfigured()) {
+    const { auth } = await import("@clerk/nextjs/server");
+    const { userId, orgId } = auth();
+    if (!userId) throw new UnauthorizedError();
+    const fast = await resolveContextFromDb({ clerkId: userId }, orgId ?? null);
+    if (fast) return fast;
+    // First sign-in / new org: provision with Clerk + writes.
+    return resolveContext(await currentIdentity());
+  }
+  const fast = await resolveContextFromDb({ email: DEV_USER.email }, null);
+  if (fast) return fast;
+  return resolveContext({ ...DEV_USER, isDev: true });
+});
+
+/**
+ * Resolve just the current user + super-admin flag, without requiring an
+ * organization or workspace. Used by the admin panel and its API. Cached per
+ * request; also uses a DB fast path (no Clerk API call once the user exists).
+ */
+export const getActor = cache(async (): Promise<Actor> => {
+  if (isClerkConfigured()) {
+    const { auth } = await import("@clerk/nextjs/server");
+    const { userId } = auth();
+    if (!userId) throw new UnauthorizedError();
+    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (user) return { user, isSuperAdmin: isSuperAdmin(user.email) };
+    return resolveActor(await currentIdentity());
+  }
+  const user = await prisma.user.findUnique({ where: { email: DEV_USER.email } });
+  if (user) return { user, isSuperAdmin: isSuperAdmin(user.email) };
+  return resolveActor({ ...DEV_USER, isDev: true });
+});
 
 export class UnauthorizedError extends Error {
   constructor(message = "You must be signed in") {

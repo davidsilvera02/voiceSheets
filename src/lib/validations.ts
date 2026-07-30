@@ -149,8 +149,3 @@ export const aiExtractSchema = z.object({
   // Optionally refine an existing pending row ("no, the quantity is thirty").
   current: rowValuesSchema.optional(),
 });
-
-export const aiCleanupSchema = z.object({
-  spreadsheetId: z.string().min(1),
-  rowIds: z.array(z.string()).min(1).max(500),
-});
