@@ -8,7 +8,12 @@ import {
   parseDate,
   parseBoolean,
 } from "@/lib/columns";
-import { env, isAnthropicConfigured } from "@/lib/env";
+import {
+  env,
+  isAnthropicConfigured,
+  isOpenAIConfigured,
+  rowModelProvider,
+} from "@/lib/env";
 import type { AIExtractionResult, AIField } from "@/lib/types";
 
 let client: Anthropic | null = null;
@@ -49,18 +54,18 @@ function textOf(message: { content: Array<{ type: string; text?: string }> }): s
  */
 async function createExtractionMessage(messages: Anthropic.MessageParam[]): Promise<string> {
   const base = {
-    model: env.ANTHROPIC_MODEL,
+    model: env.ROW_MODEL,
     max_tokens: 2048,
     system: SYSTEM_PROMPT,
     messages,
     // Extraction is a simple, well-specified task — low effort is plenty and
     // markedly faster than the default. Only sent for models that accept it
     // (Haiku 4.5 rejects `effort` with a 400).
-    ...(EFFORT_CAPABLE_MODELS.has(env.ANTHROPIC_MODEL)
+    ...(EFFORT_CAPABLE_MODELS.has(env.ROW_MODEL)
       ? { output_config: { effort: "low" as const } }
       : {}),
   };
-  if (fastModeEnabled && FAST_CAPABLE_MODELS.has(env.ANTHROPIC_MODEL)) {
+  if (fastModeEnabled && FAST_CAPABLE_MODELS.has(env.ROW_MODEL)) {
     try {
       const message = await anthropic().beta.messages.create({
         ...base,
@@ -80,6 +85,41 @@ async function createExtractionMessage(messages: Anthropic.MessageParam[]): Prom
   }
   const message = await anthropic().messages.create(base);
   return textOf(message);
+}
+
+/** Call an OpenAI chat model for a structured (JSON) extraction. */
+async function openaiExtractionMessage(userPrompt: string): Promise<string> {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: env.ROW_MODEL,
+      // gpt-5* reasoning models reject an explicit temperature; others benefit from 0.
+      ...(env.ROW_MODEL.startsWith("gpt-5") ? {} : { temperature: 0 }),
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      `OpenAI extraction failed: ${res.status} ${(await res.text()).slice(0, 200)}`,
+    );
+  }
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  return data.choices?.[0]?.message?.content ?? "{}";
+}
+
+/** Whether the configured ROW_MODEL's provider has an API key set. */
+function isRowModelConfigured(): boolean {
+  return rowModelProvider() === "openai" ? isOpenAIConfigured() : isAnthropicConfigured();
 }
 
 /**
@@ -194,8 +234,10 @@ function clamp01(n: number): number {
 
 /**
  * Turn a transcript into a structured, confidence-scored row.
- * Uses Claude when configured; otherwise a deterministic heuristic parser so
- * the review flow is demoable end-to-end without an API key.
+ *
+ * Routes to the provider that serves ROW_MODEL (claude-* → Anthropic, else →
+ * OpenAI). Falls back to a deterministic heuristic parser when that provider's
+ * key isn't configured, so the review flow is demoable without any API key.
  */
 export async function extractRow(params: {
   columns: ColumnDefinition[];
@@ -204,18 +246,23 @@ export async function extractRow(params: {
 }): Promise<AIExtractionResult> {
   const { columns, transcript, current } = params;
 
-  if (!isAnthropicConfigured()) {
+  if (!isRowModelConfigured()) {
     return heuristicExtract(columns, transcript, current);
   }
 
-  const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: buildUserPrompt(columns, transcript, current) },
-  ];
+  const useOpenAI = rowModelProvider() === "openai";
+  const userPrompt = buildUserPrompt(columns, transcript, current);
+  // Anthropic uses a message list (so a corrective nudge can be appended);
+  // OpenAI re-sends a single user prompt.
+  const messages: Anthropic.MessageParam[] = [{ role: "user", content: userPrompt }];
+  let openaiPrompt = userPrompt;
 
   // Up to two attempts: retry once with a corrective nudge on malformed JSON.
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const text = await createExtractionMessage(messages);
+      const text = useOpenAI
+        ? await openaiExtractionMessage(openaiPrompt)
+        : await createExtractionMessage(messages);
       const parsed = extractJson(text) as {
         fields?: Record<string, RawField>;
         notes?: string;
@@ -229,14 +276,13 @@ export async function extractRow(params: {
       };
     } catch (error) {
       if (attempt === 0) {
+        const nudge = "Your previous response was not valid JSON. Reply with ONLY the JSON object.";
         messages.push({
           role: "assistant",
           content: "I will return only valid JSON matching the schema.",
         });
-        messages.push({
-          role: "user",
-          content: "Your previous response was not valid JSON. Reply with ONLY the JSON object.",
-        });
+        messages.push({ role: "user", content: nudge });
+        openaiPrompt = `${userPrompt}\n\n${nudge}`;
         continue;
       }
       console.error("[voicesheets] AI extraction failed, using heuristic fallback:", error);

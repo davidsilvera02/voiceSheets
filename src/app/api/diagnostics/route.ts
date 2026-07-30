@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { env, isClerkConfigured } from "@/lib/env";
+import { env, isClerkConfigured, rowModelProvider } from "@/lib/env";
 import { getActor, getAuthContext, UnauthorizedError } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
@@ -176,8 +176,9 @@ export async function GET() {
         clerkActive: isClerkConfigured(),
         forceDevAuth: env.FORCE_DEV_AUTH,
         anthropicKey: env.ANTHROPIC_API_KEY ? "set" : "missing",
-        anthropicModel: env.ANTHROPIC_MODEL,
         openaiKey: env.OPENAI_API_KEY ? "set" : "missing",
+        rowModel: env.ROW_MODEL,
+        rowProvider: rowModelProvider(),
       },
       checks,
     },

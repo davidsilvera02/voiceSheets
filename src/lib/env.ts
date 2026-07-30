@@ -39,6 +39,13 @@ export const env = {
   OPENAI_API_KEY: str(process.env.OPENAI_API_KEY),
   WHISPER_MODEL: str(process.env.WHISPER_MODEL) || "whisper-1",
 
+  // Row generation (voice → structured row). The provider is inferred from the
+  // model name: claude-* → Anthropic (needs ANTHROPIC_API_KEY); anything else →
+  // OpenAI (needs OPENAI_API_KEY). Switch models/providers by changing this one
+  // value. gpt-4.1-nano is the fastest accurate option; gpt-4.1-mini and
+  // claude-haiku-4-5 are good alternatives.
+  ROW_MODEL: str(process.env.ROW_MODEL) || "gpt-4.1-nano",
+
   FORCE_DEV_AUTH: str(process.env.VOICESHEETS_FORCE_DEV_AUTH) === "true",
   NODE_ENV: process.env.NODE_ENV ?? "development",
 
@@ -70,6 +77,16 @@ export function isClerkConfigured(): boolean {
 /** True when the Anthropic API can be called for real AI extraction. */
 export function isAnthropicConfigured(): boolean {
   return env.ANTHROPIC_API_KEY.length > 0;
+}
+
+/** True when the OpenAI API key is set (used for OpenAI row generation). */
+export function isOpenAIConfigured(): boolean {
+  return env.OPENAI_API_KEY.length > 0;
+}
+
+/** The provider that serves ROW_MODEL: claude-* → Anthropic, else → OpenAI. */
+export function rowModelProvider(): "anthropic" | "openai" {
+  return env.ROW_MODEL.startsWith("claude") ? "anthropic" : "openai";
 }
 
 /** True when server-side Whisper transcription is available. */
