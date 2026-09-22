@@ -116,11 +116,11 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
     if (!template) return;
     try {
       const copy = await duplicate.mutateAsync(template.id);
-      toast.success("Template duplicated — edit the copy freely");
+      toast.success("Plantilla duplicada — edita la copia libremente");
       initialSnapshot.current = snapshot; // avoid the unsaved-changes prompt
       router.push(`/templates/${copy.id}/edit`);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to duplicate");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo duplicar");
     }
   }
 
@@ -179,17 +179,17 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
 
   function buildPayload(): CreateTemplateInput | null {
     if (!name.trim()) {
-      toast.error("Give your template a name");
+      toast.error("Ponle un nombre a tu plantilla");
       return null;
     }
     const named = columns.filter((c) => c.name.trim());
     if (named.length === 0) {
-      toast.error("Add at least one column");
+      toast.error("Añade al menos una columna");
       return null;
     }
     for (const c of named) {
       if (c.type === "DROPDOWN" && c.options.filter((o) => o.trim()).length === 0) {
-        toast.error(`Dropdown column "${c.name}" needs at least one option`);
+        toast.error(`La columna de lista desplegable "${c.name}" necesita al menos una opción`);
         return null;
       }
     }
@@ -221,14 +221,14 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
     try {
       if (template) {
         await update.mutateAsync(payload);
-        toast.success("Template saved");
+        toast.success("Plantilla guardada");
         return { ok: true, id: template.id };
       }
       const created = await create.mutateAsync(payload);
-      toast.success("Template created");
+      toast.success("Plantilla creada");
       return { ok: true, id: created.id };
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to save template");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo guardar la plantilla");
       return { ok: false };
     }
   }
@@ -255,15 +255,15 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
       <PageHeader
-        title={template ? "Edit template" : "New template"}
-        description="Define the columns your spreadsheets will use."
+        title={template ? "Editar plantilla" : "Nueva plantilla"}
+        description="Define las columnas que usarán tus hojas de cálculo."
         actions={
           <>
             <Button variant="outline" onClick={() => setShowPreview(true)}>
-              <Eye className="h-4 w-4" /> Preview
+              <Eye className="h-4 w-4" /> Vista previa
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save template"}
+              <Save className="h-4 w-4" /> {saving ? "Guardando…" : "Guardar plantilla"}
             </Button>
           </>
         }
@@ -273,7 +273,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
         <CardContent className="space-y-4 p-5">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="space-y-1.5">
-              <Label className="text-xs">Icon</Label>
+              <Label className="text-xs">Icono</Label>
               <div className="flex max-w-[17rem] flex-wrap gap-1.5">
                 {TEMPLATE_ICONS.map(({ name, Icon }) => (
                   <button
@@ -294,41 +294,41 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
             </div>
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="tpl-name" className="text-xs">
-                Name
+                Nombre
               </Label>
               <Input
                 id="tpl-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Purchase Requests"
+                placeholder="p. ej. Solicitudes de compra"
               />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="tpl-desc" className="text-xs">
-              Description
+              Descripción
             </Label>
             <Textarea
               id="tpl-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this template used for?"
+              placeholder="¿Para qué se usa esta plantilla?"
               rows={2}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="tpl-voice" className="text-xs">
-              Voice example
+              Ejemplo de voz
             </Label>
             <Textarea
               id="tpl-voice"
               value={voiceExample}
               onChange={(e) => setVoiceExample(e.target.value)}
-              placeholder="e.g. Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday."
+              placeholder="p. ej. Pide 30 cajas de papel A4 a Office Depot a 4.50 cada una, necesarias para el próximo viernes."
               rows={2}
             />
             <p className="text-[11px] text-muted-foreground">
-              Shown as a guide in the voice-entry box before recording. Leave blank for a default.
+              Se muestra como guía en el cuadro de entrada por voz antes de grabar. Déjalo en blanco para usar el valor predeterminado.
             </p>
           </div>
         </CardContent>
@@ -340,12 +340,14 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div>
               <p className="font-medium">
-                Structure locked — {template?.spreadsheetCount} spreadsheet
-                {template?.spreadsheetCount === 1 ? "" : "s"} use this template
+                Estructura bloqueada — {template?.spreadsheetCount} hoja
+                {template?.spreadsheetCount === 1 ? "" : "s"} de cálculo usa
+                {template?.spreadsheetCount === 1 ? "" : "n"} esta plantilla
               </p>
               <p className="mt-0.5 text-muted-foreground">
-                You can refine names, examples, and AI hints. To add, remove, or retype a
-                column, duplicate this template and build new spreadsheets from the copy.
+                Puedes refinar nombres, ejemplos y sugerencias para la IA. Para añadir, eliminar o
+                cambiar el tipo de una columna, duplica esta plantilla y crea nuevas hojas de
+                cálculo a partir de la copia.
               </p>
             </div>
           </div>
@@ -357,21 +359,21 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
             disabled={duplicate.isPending}
           >
             <Copy className="h-4 w-4" />
-            {duplicate.isPending ? "Duplicating…" : "Duplicate to edit structure"}
+            {duplicate.isPending ? "Duplicando…" : "Duplicar para editar la estructura"}
           </Button>
         </div>
       )}
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Columns ({columns.length})</h2>
+          <h2 className="text-sm font-semibold">Columnas ({columns.length})</h2>
           {!structureLocked && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setColumns((c) => [...c, blankColumn()])}
             >
-              <Plus className="h-4 w-4" /> Add column
+              <Plus className="h-4 w-4" /> Añadir columna
             </Button>
           )}
         </div>
@@ -396,7 +398,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
 
         {columns.length === 0 && (
           <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-            No columns yet. Add your first column to get started.
+            Aún no hay columnas. Añade tu primera columna para empezar.
           </p>
         )}
       </div>
@@ -404,7 +406,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
       <TemplatePreview
         open={showPreview}
         onOpenChange={setShowPreview}
-        name={name || "Untitled template"}
+        name={name || "Plantilla sin título"}
         columns={previewColumns}
       />
 
@@ -412,14 +414,14 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
       <Dialog open={guard.pendingHref !== null} onOpenChange={(o) => !o && guard.cancel()}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Save your changes?</DialogTitle>
+            <DialogTitle>¿Guardar los cambios?</DialogTitle>
             <DialogDescription>
-              You have unsaved changes to this template. Do you want to save them before leaving?
+              Tienes cambios sin guardar en esta plantilla. ¿Quieres guardarlos antes de salir?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:justify-between">
             <Button variant="ghost" onClick={guard.cancel}>
-              Cancel
+              Cancelar
             </Button>
             <div className="flex gap-2">
               <Button
@@ -429,7 +431,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                   guard.proceed();
                 }}
               >
-                Discard
+                Descartar
               </Button>
               <Button
                 disabled={saving}
@@ -441,7 +443,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                   }
                 }}
               >
-                {saving ? "Saving…" : "Save & leave"}
+                {saving ? "Guardando…" : "Guardar y salir"}
               </Button>
             </div>
           </DialogFooter>
@@ -453,19 +455,22 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              Update {template?.spreadsheetCount} spreadsheet
-              {template?.spreadsheetCount === 1 ? "" : "s"}?
+              ¿Actualizar {template?.spreadsheetCount} hoja
+              {template?.spreadsheetCount === 1 ? "" : "s"} de cálculo?
             </DialogTitle>
             <DialogDescription>
-              You changed column labels or AI guidance. These will also update the{" "}
-              {template?.spreadsheetCount} spreadsheet
-              {template?.spreadsheetCount === 1 ? "" : "s"} built from this template. Only the
-              names and AI hints change — your data, column types, and layout stay the same.
+              Cambiaste las etiquetas de las columnas o las sugerencias para la IA. Esto también
+              actualizará {template?.spreadsheetCount === 1 ? "la" : "las"}{" "}
+              {template?.spreadsheetCount} hoja
+              {template?.spreadsheetCount === 1 ? "" : "s"} de cálculo creada
+              {template?.spreadsheetCount === 1 ? "" : "s"} a partir de esta plantilla. Solo
+              cambian los nombres y las sugerencias para la IA; tus datos, los tipos de columna y
+              el diseño siguen siendo los mismos.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:justify-between">
             <Button variant="ghost" onClick={() => setShowUpdateSheets(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               disabled={saving}
@@ -474,7 +479,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                 await doSave();
               }}
             >
-              {saving ? "Saving…" : "Save & update"}
+              {saving ? "Guardando…" : "Guardar y actualizar"}
             </Button>
           </DialogFooter>
         </DialogContent>

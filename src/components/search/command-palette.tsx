@@ -62,16 +62,16 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="Search templates, spreadsheets, rows…"
+        placeholder="Buscar plantillas, hojas de cálculo, filas…"
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
         <CommandEmpty>
-          {loading ? "Searching…" : query ? "No results found." : "Type to search your workspace."}
+          {loading ? "Buscando…" : query ? "No se encontraron resultados." : "Escribe para buscar en tu espacio de trabajo."}
         </CommandEmpty>
         {results.spreadsheets.length > 0 && (
-          <CommandGroup heading="Spreadsheets">
+          <CommandGroup heading="Hojas de cálculo">
             {results.spreadsheets.map((s) => (
               <CommandItem key={s.id} value={`sheet-${s.id}-${s.name}`} onSelect={() => go(`/spreadsheets/${s.id}`)}>
                 <FileSpreadsheet className="text-muted-foreground" />
@@ -84,7 +84,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           </CommandGroup>
         )}
         {results.templates.length > 0 && (
-          <CommandGroup heading="Templates">
+          <CommandGroup heading="Plantillas">
             {results.templates.map((t) => (
               <CommandItem key={t.id} value={`tpl-${t.id}-${t.name}`} onSelect={() => go(`/templates/${t.id}`)}>
                 <LayoutTemplate className="text-muted-foreground" />
@@ -94,7 +94,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           </CommandGroup>
         )}
         {results.rows.length > 0 && (
-          <CommandGroup heading="Rows">
+          <CommandGroup heading="Filas">
             {results.rows.map((r) => (
               <CommandItem
                 key={r.id}

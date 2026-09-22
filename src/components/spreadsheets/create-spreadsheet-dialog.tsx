@@ -95,15 +95,15 @@ export function CreateSpreadsheetDialog({
 
   // --- Template create ---
   async function handleCreate() {
-    if (!templateId) return toast.error("Choose a template first");
-    if (!name.trim()) return toast.error("Give your spreadsheet a name");
+    if (!templateId) return toast.error("Elige una plantilla primero");
+    if (!name.trim()) return toast.error("Ponle un nombre a tu hoja de cálculo");
     try {
       const sheet = await create.mutateAsync({ templateId, name: name.trim(), description });
-      toast.success("Spreadsheet created");
+      toast.success("Hoja de cálculo creada");
       close(false);
       router.push(`/spreadsheets/${sheet.id}`);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to create spreadsheet");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo crear la hoja de cálculo");
     }
   }
 
@@ -137,7 +137,7 @@ export function CreateSpreadsheetDialog({
       }
       const kept = headers.filter((h) => h && h.trim());
       if (kept.length === 0) {
-        toast.error("No columns found. Make sure the first row has headers.");
+        toast.error("No se encontraron columnas. Asegúrate de que la primera fila tenga encabezados.");
         return;
       }
       setFileName(file.name);
@@ -146,7 +146,7 @@ export function CreateSpreadsheetDialog({
       setInferred(inferColumns(headers, parsedRows));
       setImportName(file.name.replace(/\.[^.]+$/, ""));
     } catch {
-      toast.error("Could not read that file. Please use a valid CSV or Excel file.");
+      toast.error("No se pudo leer ese archivo. Usa un archivo CSV o Excel válido.");
     }
   }
 
@@ -156,8 +156,8 @@ export function CreateSpreadsheetDialog({
 
   // --- Import submit: create template → spreadsheet → import rows ---
   async function handleImport() {
-    if (!importName.trim()) return toast.error("Give your spreadsheet a name");
-    if (inferred.length === 0) return toast.error("Upload a file first");
+    if (!importName.trim()) return toast.error("Ponle un nombre a tu hoja de cálculo");
+    if (inferred.length === 0) return toast.error("Sube un archivo primero");
     setImporting(true);
     try {
       // Build template columns; derive dropdown options from data when needed.
@@ -207,10 +207,10 @@ export function CreateSpreadsheetDialog({
           { rows: records, source: "IMPORT" },
         );
         toast.success(
-          `Imported ${result.imported} rows into a new spreadsheet${result.failed ? ` · ${result.failed} skipped` : ""}`,
+          `Se importaron ${result.imported} filas a una nueva hoja de cálculo${result.failed ? ` · ${result.failed} omitidas` : ""}`,
         );
       } else {
-        toast.success("Created a spreadsheet from your file's columns");
+        toast.success("Se creó una hoja de cálculo a partir de las columnas de tu archivo");
       }
 
       qc.invalidateQueries({ queryKey: ["spreadsheets"] });
@@ -218,7 +218,7 @@ export function CreateSpreadsheetDialog({
       close(false);
       router.push(`/spreadsheets/${sheet.id}`);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Import failed");
+      toast.error(error instanceof ApiClientError ? error.message : "Error al importar");
     } finally {
       setImporting(false);
     }
@@ -230,10 +230,10 @@ export function CreateSpreadsheetDialog({
     <div className="space-y-4">
       {noTemplates && !fixedTemplateId ? (
         <p className="text-sm text-muted-foreground">
-          You have no templates yet — switch to <span className="font-medium">Import file</span> to
-          create one from a spreadsheet, or{" "}
+          Aún no tienes plantillas — cambia a <span className="font-medium">Importar archivo</span> para
+          crear una a partir de una hoja de cálculo, o{" "}
           <a className="text-primary underline" href="/templates/new">
-            build one
+            crea una
           </a>
           .
         </p>
@@ -241,10 +241,10 @@ export function CreateSpreadsheetDialog({
         <>
           {!fixedTemplateId && (
             <div className="space-y-1.5">
-              <Label>Template</Label>
+              <Label>Plantilla</Label>
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a template" />
+                  <SelectValue placeholder="Elige una plantilla" />
                 </SelectTrigger>
                 <SelectContent>
                   {templates.data?.data.map((t) => (
@@ -257,10 +257,10 @@ export function CreateSpreadsheetDialog({
             </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="sheet-name">Name</Label>
+            <Label htmlFor="sheet-name">Nombre</Label>
             <Input
               id="sheet-name"
-              placeholder="e.g. Office Supplies — June"
+              placeholder="p. ej. Suministros de oficina — junio"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
@@ -268,10 +268,10 @@ export function CreateSpreadsheetDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sheet-desc">Description (optional)</Label>
+            <Label htmlFor="sheet-desc">Descripción (opcional)</Label>
             <Textarea
               id="sheet-desc"
-              placeholder="What is this spreadsheet for?"
+              placeholder="¿Para qué es esta hoja de cálculo?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -290,15 +290,15 @@ export function CreateSpreadsheetDialog({
         className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center transition-colors hover:border-primary/50 hover:bg-accent/40"
       >
         <FileUp className="h-8 w-8 text-muted-foreground" />
-        <span className="text-sm font-medium">Choose a .csv or .xlsx file</span>
+        <span className="text-sm font-medium">Elige un archivo .csv o .xlsx</span>
         <span className="text-xs text-muted-foreground">
-          We&apos;ll detect the columns and create a template automatically.
+          Detectaremos las columnas y crearemos una plantilla automáticamente.
         </span>
       </button>
     ) : (
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="import-name">Spreadsheet name</Label>
+          <Label htmlFor="import-name">Nombre de la hoja de cálculo</Label>
           <Input
             id="import-name"
             value={importName}
@@ -309,14 +309,14 @@ export function CreateSpreadsheetDialog({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <Label className="text-xs">
-              {inferred.length} columns · {rows.length} rows
+              {inferred.length} columnas · {rows.length} filas
             </Label>
             <button
               type="button"
               className="text-xs text-primary hover:underline"
               onClick={() => inputRef.current?.click()}
             >
-              Change file
+              Cambiar archivo
             </button>
           </div>
           <div className="max-h-[40vh] space-y-1.5 overflow-y-auto rounded-lg border p-2">
@@ -346,9 +346,9 @@ export function CreateSpreadsheetDialog({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New spreadsheet</DialogTitle>
+          <DialogTitle>Nueva hoja de cálculo</DialogTitle>
           <DialogDescription>
-            Start from a template, or import a CSV/Excel file to create one automatically.
+            Empieza desde una plantilla, o importa un archivo CSV/Excel para crear una automáticamente.
           </DialogDescription>
         </DialogHeader>
 
@@ -357,8 +357,8 @@ export function CreateSpreadsheetDialog({
         ) : (
           <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="template">From template</TabsTrigger>
-              <TabsTrigger value="import">Import file</TabsTrigger>
+              <TabsTrigger value="template">Desde plantilla</TabsTrigger>
+              <TabsTrigger value="import">Importar archivo</TabsTrigger>
             </TabsList>
             {/* A shared min-height keeps the dialog the same size on both tabs,
                 so switching doesn't resize and re-center it under the cursor. */}
@@ -385,19 +385,19 @@ export function CreateSpreadsheetDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => close(false)}>
-            Cancel
+            Cancelar
           </Button>
           {!fixedTemplateId && mode === "import" ? (
             <Button onClick={handleImport} disabled={importing || inferred.length === 0}>
               {importing
-                ? "Importing…"
+                ? "Importando…"
                 : rows.length
-                  ? `Create & import ${rows.length} rows`
-                  : "Create spreadsheet"}
+                  ? `Crear e importar ${rows.length} filas`
+                  : "Crear hoja de cálculo"}
             </Button>
           ) : (
             <Button onClick={handleCreate} disabled={create.isPending || noTemplates}>
-              {create.isPending ? "Creating…" : "Create spreadsheet"}
+              {create.isPending ? "Creando…" : "Crear hoja de cálculo"}
             </Button>
           )}
         </DialogFooter>

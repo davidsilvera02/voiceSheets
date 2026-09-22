@@ -40,7 +40,7 @@ function coerceAndValidate(
     if (error) errors[column.key] = error;
   }
   if (Object.keys(errors).length > 0) {
-    throw new ValidationError("Some fields are invalid", { fields: errors });
+    throw new ValidationError("Algunos campos no son válidos", { fields: errors });
   }
   return result;
 }
@@ -171,7 +171,7 @@ export async function updateRow(
     where: { id: rowId, spreadsheetId, deletedAt: null },
     include: { cells: true },
   });
-  if (!existing) throw new NotFoundError("Row");
+  if (!existing) throw new NotFoundError("La fila");
 
   const before = cellsToValues(existing.cells);
   const patch = coerceAndValidate(columns, input.values, {
@@ -237,7 +237,7 @@ export async function deleteRow(ctx: AuthContext, spreadsheetId: string, rowId: 
     where: { id: rowId, spreadsheetId, deletedAt: null },
     include: { cells: true },
   });
-  if (!existing) throw new NotFoundError("Row");
+  if (!existing) throw new NotFoundError("La fila");
   const snapshot = cellsToValues(existing.cells);
 
   await prisma.$transaction(async (tx) => {
@@ -297,7 +297,7 @@ export async function restoreRowVersion(
   const entry = await prisma.rowHistory.findFirst({
     where: { id: historyId, spreadsheetId, rowId },
   });
-  if (!entry || !entry.snapshot) throw new NotFoundError("History snapshot");
+  if (!entry || !entry.snapshot) throw new NotFoundError("La instantánea del historial");
   const snapshot = coerceAndValidate(columns, entry.snapshot as Record<string, unknown>);
 
   const row = await prisma.$transaction(async (tx) => {

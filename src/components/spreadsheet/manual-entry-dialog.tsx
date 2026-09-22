@@ -52,21 +52,21 @@ export function ManualEntryDialog({
   async function onSubmit(values: Record<string, unknown>) {
     try {
       await createRow.mutateAsync({ values: values as Record<string, CellValue>, source: "MANUAL" });
-      toast.success("Row added");
+      toast.success("Fila añadida");
       form.reset(defaults);
       onOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to add row");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo añadir la fila");
     }
   }
 
   async function onSubmitAndAdd(values: Record<string, unknown>) {
     try {
       await createRow.mutateAsync({ values: values as Record<string, CellValue>, source: "MANUAL" });
-      toast.success("Row added — add another");
+      toast.success("Fila añadida — añade otra");
       form.reset(defaults);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to add row");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo añadir la fila");
     }
   }
 
@@ -74,8 +74,8 @@ export function ManualEntryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add row</DialogTitle>
-          <DialogDescription>Fill in the fields for this record.</DialogDescription>
+          <DialogTitle>Añadir fila</DialogTitle>
+          <DialogDescription>Completa los campos de este registro.</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           {/* Horizontal padding keeps focus rings from being clipped by the ScrollArea's overflow. */}
@@ -94,17 +94,17 @@ export function ManualEntryDialog({
         </ScrollArea>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Cancelar
           </Button>
           <Button
             variant="secondary"
             onClick={form.handleSubmit(onSubmitAndAdd)}
             disabled={createRow.isPending}
           >
-            Save & add another
+            Guardar y añadir otra
           </Button>
           <Button onClick={form.handleSubmit(onSubmit)} disabled={createRow.isPending}>
-            {createRow.isPending ? "Saving…" : "Add row"}
+            {createRow.isPending ? "Guardando…" : "Añadir fila"}
           </Button>
         </DialogFooter>
       </DialogContent>

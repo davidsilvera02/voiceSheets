@@ -19,7 +19,7 @@ export default function EditTemplatePage() {
     );
   }
   if (isError || !data) {
-    return <div className="p-6 text-sm text-muted-foreground">Template not found.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Plantilla no encontrada.</div>;
   }
   return <TemplateEditor template={data} />;
 }

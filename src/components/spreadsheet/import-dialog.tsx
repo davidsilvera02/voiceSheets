@@ -88,13 +88,13 @@ export function ImportDialog({
         autoMap(hdrs);
       }
     } catch {
-      toast.error("Could not read that file. Please use a valid CSV or Excel file.");
+      toast.error("No se pudo leer ese archivo. Usa un archivo CSV o Excel válido.");
     }
   }
 
   async function runImport() {
     if (rows.length === 0) {
-      toast.error("This file has no data rows to import.");
+      toast.error("Este archivo no tiene filas de datos para importar.");
       return;
     }
     const mapped: Record<string, CellValue>[] = rows.map((row) => {
@@ -108,12 +108,12 @@ export function ImportDialog({
     try {
       const res = await importRows.mutateAsync(mapped);
       toast.success(
-        `Imported ${res.imported} rows${res.failed ? ` · ${res.failed} skipped` : ""}`,
+        `Se importaron ${res.imported} filas${res.failed ? ` · ${res.failed} omitidas` : ""}`,
       );
       reset();
       onOpenChange(false);
     } catch {
-      toast.error("Import failed");
+      toast.error("Error al importar");
     }
   }
 
@@ -129,9 +129,9 @@ export function ImportDialog({
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Import from CSV / Excel</DialogTitle>
+          <DialogTitle>Importar desde CSV / Excel</DialogTitle>
           <DialogDescription>
-            Upload a file and map its columns to this spreadsheet&apos;s fields.
+            Sube un archivo y asigna sus columnas a los campos de esta hoja de cálculo.
           </DialogDescription>
         </DialogHeader>
 
@@ -142,16 +142,16 @@ export function ImportDialog({
             className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/40"
           >
             <FileUp className="h-8 w-8 text-muted-foreground" />
-            <span className="text-sm font-medium">Choose a .csv or .xlsx file</span>
+            <span className="text-sm font-medium">Elige un archivo .csv o .xlsx</span>
             <span className="text-xs text-muted-foreground">
-              The first row should contain column headers.
+              La primera fila debe contener los encabezados de columna.
             </span>
           </button>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{fileName}</span> · {rows.length} rows ·{" "}
-              {mappedCount}/{columns.length} columns mapped
+              <span className="font-medium text-foreground">{fileName}</span> · {rows.length} filas ·{" "}
+              {mappedCount}/{columns.length} columnas asignadas
             </p>
             <div className="max-h-[45vh] space-y-2 overflow-y-auto rounded-lg border p-3">
               {columns.map((col) => (
@@ -168,7 +168,7 @@ export function ImportDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={SKIP}>— Skip —</SelectItem>
+                      <SelectItem value={SKIP}>— Omitir —</SelectItem>
                       {headers.map((h) => (
                         <SelectItem key={h} value={h}>
                           {h}
@@ -197,7 +197,7 @@ export function ImportDialog({
         <DialogFooter>
           {headers.length > 0 && (
             <Button variant="outline" onClick={reset}>
-              Choose another file
+              Elegir otro archivo
             </Button>
           )}
           <Button
@@ -205,7 +205,7 @@ export function ImportDialog({
             disabled={headers.length === 0 || mappedCount === 0 || importRows.isPending}
           >
             <Upload className="h-4 w-4" />
-            {importRows.isPending ? "Importing…" : `Import ${rows.length} rows`}
+            {importRows.isPending ? "Importando…" : `Importar ${rows.length} filas`}
           </Button>
         </DialogFooter>
       </DialogContent>

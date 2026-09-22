@@ -158,12 +158,12 @@ export function SpreadsheetView({ id }: { id: string }) {
     );
   }
   if (!sheet) {
-    return <div className="p-6 text-sm text-muted-foreground">Spreadsheet not found.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Hoja de cálculo no encontrada.</div>;
   }
 
   function handleExport(format: ExportFormat) {
     exportSpreadsheet(sheet!.name, visibleColumns, rows, format);
-    toast.success(`Exported ${rows.length} rows`);
+    toast.success(`Se exportaron ${rows.length} filas`);
   }
 
   return (
@@ -174,7 +174,7 @@ export function SpreadsheetView({ id }: { id: string }) {
             <button
               type="button"
               className="flex items-center gap-1.5 rounded-md text-left hover:text-primary"
-              title="Rename spreadsheet"
+              title="Cambiar nombre de la hoja de cálculo"
               onClick={() => {
                 setRenameValue(sheet.name);
                 setRenameOpen(true);
@@ -187,7 +187,7 @@ export function SpreadsheetView({ id }: { id: string }) {
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              title={sheet.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              title={sheet.isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
               onClick={() => updateSheet.mutate({ isFavorite: !sheet.isFavorite })}
             >
               <Star
@@ -202,13 +202,13 @@ export function SpreadsheetView({ id }: { id: string }) {
         }
         description={
           <span>
-            {sheet.templateName && <>Template: {sheet.templateName} · </>}
-            {rows.length} rows
+            {sheet.templateName && <>Plantilla: {sheet.templateName} · </>}
+            {rows.length} filas
           </span>
         }
         actions={
           <Button variant="ghost" size="sm" onClick={() => router.push("/spreadsheets")}>
-            All spreadsheets
+            Todas las hojas de cálculo
           </Button>
         }
       />
@@ -228,7 +228,7 @@ export function SpreadsheetView({ id }: { id: string }) {
         }}
         onDuplicate={async () => {
           const dup = await duplicateSheet.mutateAsync({ id, withRows: true });
-          toast.success("Spreadsheet duplicated");
+          toast.success("Hoja de cálculo duplicada");
           router.push(`/spreadsheets/${dup.id}`);
         }}
         onDelete={() => setDeleteConfirm(true)}
@@ -260,7 +260,7 @@ export function SpreadsheetView({ id }: { id: string }) {
               await createRow.mutateAsync({ values: rowValues, source: "MANUAL" });
             } catch (error) {
               toast.error(
-                error instanceof ApiClientError ? error.message : "Failed to add row",
+                error instanceof ApiClientError ? error.message : "No se pudo añadir la fila",
               );
             }
           }}
@@ -303,7 +303,7 @@ export function SpreadsheetView({ id }: { id: string }) {
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Rename spreadsheet</DialogTitle>
+            <DialogTitle>Cambiar nombre de la hoja de cálculo</DialogTitle>
           </DialogHeader>
           <Input
             value={renameValue}
@@ -318,7 +318,7 @@ export function SpreadsheetView({ id }: { id: string }) {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button
               onClick={() => {
@@ -328,7 +328,7 @@ export function SpreadsheetView({ id }: { id: string }) {
                 }
               }}
             >
-              Save
+              Guardar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -337,13 +337,13 @@ export function SpreadsheetView({ id }: { id: string }) {
       <ConfirmDialog
         open={deleteConfirm}
         onOpenChange={setDeleteConfirm}
-        title="Delete spreadsheet?"
-        description="This permanently deletes the spreadsheet and all of its rows and history."
-        confirmLabel="Delete"
+        title="¿Eliminar hoja de cálculo?"
+        description="Esto elimina permanentemente la hoja de cálculo y todas sus filas e historial."
+        confirmLabel="Eliminar"
         destructive
         onConfirm={async () => {
           await deleteSheet.mutateAsync(id);
-          toast.success("Spreadsheet deleted");
+          toast.success("Hoja de cálculo eliminada");
           router.push("/spreadsheets");
         }}
       />
@@ -351,14 +351,14 @@ export function SpreadsheetView({ id }: { id: string }) {
       <ConfirmDialog
         open={bulkDeleteConfirm}
         onOpenChange={setBulkDeleteConfirm}
-        title={`Delete ${selectedIds.length} rows?`}
-        description="The rows will be removed. You can restore individual rows from version history."
-        confirmLabel="Delete rows"
+        title={`¿Eliminar ${selectedIds.length} filas?`}
+        description="Las filas se eliminarán. Puedes restaurar filas individuales desde el historial de versiones."
+        confirmLabel="Eliminar filas"
         destructive
         onConfirm={async () => {
           await bulkDelete.mutateAsync(selectedIds);
           setRowSelection({});
-          toast.success("Rows deleted");
+          toast.success("Filas eliminadas");
         }}
       />
     </div>

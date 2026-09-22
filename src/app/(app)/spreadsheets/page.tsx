@@ -67,11 +67,11 @@ export default function SpreadsheetsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
       <PageHeader
-        title="Spreadsheets"
-        description="Every spreadsheet is a live dataset built from a template."
+        title="Hojas de cálculo"
+        description="Cada hoja de cálculo es un conjunto de datos activo creado a partir de una plantilla."
         actions={
           <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" /> New spreadsheet
+            <Plus className="h-4 w-4" /> Nueva hoja de cálculo
           </Button>
         }
       />
@@ -79,12 +79,12 @@ export default function SpreadsheetsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList>
-            <TabsTrigger value="ACTIVE">Active</TabsTrigger>
-            <TabsTrigger value="ARCHIVED">Archived</TabsTrigger>
+            <TabsTrigger value="ACTIVE">Activas</TabsTrigger>
+            <TabsTrigger value="ARCHIVED">Archivadas</TabsTrigger>
           </TabsList>
         </Tabs>
         <Input
-          placeholder="Search spreadsheets…"
+          placeholder="Buscar hojas de cálculo…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="sm:max-w-xs"
@@ -100,16 +100,16 @@ export default function SpreadsheetsPage() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FileSpreadsheet}
-          title={tab === "ACTIVE" ? "No spreadsheets yet" : "No archived spreadsheets"}
+          title={tab === "ACTIVE" ? "Aún no hay hojas de cálculo" : "No hay hojas de cálculo archivadas"}
           description={
             tab === "ACTIVE"
-              ? "Create your first spreadsheet from a template."
-              : "Spreadsheets you archive appear here."
+              ? "Crea tu primera hoja de cálculo a partir de una plantilla."
+              : "Las hojas de cálculo que archives aparecerán aquí."
           }
           action={
             tab === "ACTIVE" && (
               <Button onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" /> New spreadsheet
+                <Plus className="h-4 w-4" /> Nueva hoja de cálculo
               </Button>
             )
           }
@@ -123,7 +123,7 @@ export default function SpreadsheetsPage() {
               tab={tab}
               onDuplicate={async () => {
                 await duplicate.mutateAsync({ id: s.id, withRows: true });
-                toast.success("Spreadsheet duplicated");
+                toast.success("Hoja de cálculo duplicada");
               }}
               onDelete={() => setDeleteId(s.id)}
             />
@@ -134,14 +134,14 @@ export default function SpreadsheetsPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onOpenChange={(o) => !o && setDeleteId(null)}
-        title="Delete spreadsheet?"
-        description="This permanently deletes the spreadsheet and all its rows and history."
-        confirmLabel="Delete"
+        title="¿Eliminar hoja de cálculo?"
+        description="Esto elimina permanentemente la hoja de cálculo, junto con todas sus filas e historial."
+        confirmLabel="Eliminar"
         destructive
         onConfirm={async () => {
           if (deleteId) {
             await remove.mutateAsync(deleteId);
-            toast.success("Spreadsheet deleted");
+            toast.success("Hoja de cálculo eliminada");
             setDeleteId(null);
           }
         }}
@@ -211,7 +211,7 @@ function SheetCard({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/spreadsheets/${sheet.id}`}>
-                    <FileSpreadsheet className="h-4 w-4" /> Open
+                    <FileSpreadsheet className="h-4 w-4" /> Abrir
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -220,10 +220,10 @@ function SheetCard({
                     setRenameOpen(true);
                   }}
                 >
-                  <Pencil className="h-4 w-4" /> Rename
+                  <Pencil className="h-4 w-4" /> Cambiar nombre
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDuplicate}>
-                  <Copy className="h-4 w-4" /> Duplicate
+                  <Copy className="h-4 w-4" /> Duplicar
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
@@ -232,11 +232,11 @@ function SheetCard({
                 >
                   {tab === "ACTIVE" ? (
                     <>
-                      <Archive className="h-4 w-4" /> Archive
+                      <Archive className="h-4 w-4" /> Archivar
                     </>
                   ) : (
                     <>
-                      <ArchiveRestore className="h-4 w-4" /> Restore
+                      <ArchiveRestore className="h-4 w-4" /> Restaurar
                     </>
                   )}
                 </DropdownMenuItem>
@@ -245,7 +245,7 @@ function SheetCard({
                   className="text-destructive focus:text-destructive"
                   onClick={onDelete}
                 >
-                  <Trash2 className="h-4 w-4" /> Delete
+                  <Trash2 className="h-4 w-4" /> Eliminar
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -258,7 +258,7 @@ function SheetCard({
             {sheet.templateName}
           </Badge>
         )}
-        <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} rows</span>
+        <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} filas</span>
         <span className="ml-auto shrink-0 whitespace-nowrap">
           {formatDistanceToNow(new Date(sheet.lastActivityAt), { addSuffix: true })}
         </span>
@@ -268,7 +268,7 @@ function SheetCard({
     <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Rename spreadsheet</DialogTitle>
+          <DialogTitle>Cambiar nombre de la hoja de cálculo</DialogTitle>
         </DialogHeader>
         <Input
           value={renameValue}
@@ -278,9 +278,9 @@ function SheetCard({
         />
         <DialogFooter>
           <Button variant="outline" onClick={() => setRenameOpen(false)}>
-            Cancel
+            Cancelar
           </Button>
-          <Button onClick={saveRename}>Save</Button>
+          <Button onClick={saveRename}>Guardar</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

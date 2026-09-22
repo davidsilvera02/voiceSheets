@@ -19,11 +19,11 @@ import { useRestoreRow, useSpreadsheetHistory } from "@/hooks/use-history";
 import type { HistoryEntryDTO } from "@/lib/types";
 
 const CHANGE_LABEL: Record<HistoryEntryDTO["changeType"], string> = {
-  CREATE: "Row created",
-  UPDATE: "Row edited",
-  DELETE: "Row deleted",
-  RESTORE: "Row restored",
-  IMPORT: "Row imported",
+  CREATE: "Fila creada",
+  UPDATE: "Fila editada",
+  DELETE: "Fila eliminada",
+  RESTORE: "Fila restaurada",
+  IMPORT: "Fila importada",
 };
 
 const CHANGE_VARIANT: Record<HistoryEntryDTO["changeType"], "default" | "secondary" | "destructive" | "outline"> = {
@@ -60,9 +60,9 @@ export function VersionHistoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Version history</DialogTitle>
+          <DialogTitle>Historial de versiones</DialogTitle>
           <DialogDescription>
-            Every change is recorded. Restore any row to a previous state.
+            Se registra cada cambio. Restaura cualquier fila a un estado anterior.
           </DialogDescription>
         </DialogHeader>
 
@@ -74,7 +74,7 @@ export function VersionHistoryDialog({
               ))}
             </div>
           ) : !data || data.data.length === 0 ? (
-            <EmptyState icon={History} title="No history yet" description="Edits will appear here." />
+            <EmptyState icon={History} title="Aún no hay historial" description="Las ediciones aparecerán aquí." />
           ) : (
             <div className="space-y-2">
               {data.data.map((entry) => (
@@ -94,11 +94,11 @@ export function VersionHistoryDialog({
                   {(entry.previousValue != null || entry.newValue != null) && (
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
                       <div className="rounded bg-destructive/5 px-2 py-1">
-                        <span className="font-medium text-destructive">Before: </span>
+                        <span className="font-medium text-destructive">Antes: </span>
                         {preview(entry.previousValue)}
                       </div>
                       <div className="rounded bg-emerald-500/5 px-2 py-1">
-                        <span className="font-medium text-emerald-600 dark:text-emerald-400">After: </span>
+                        <span className="font-medium text-emerald-600 dark:text-emerald-400">Después: </span>
                         {preview(entry.newValue)}
                       </div>
                     </div>
@@ -111,10 +111,10 @@ export function VersionHistoryDialog({
                         disabled={restore.isPending}
                         onClick={async () => {
                           await restore.mutateAsync({ rowId: entry.rowId!, historyId: entry.id });
-                          toast.success("Row restored to this version");
+                          toast.success("Fila restaurada a esta versión");
                         }}
                       >
-                        <RotateCcw className="h-3.5 w-3.5" /> Restore this version
+                        <RotateCcw className="h-3.5 w-3.5" /> Restaurar esta versión
                       </Button>
                     </div>
                   )}

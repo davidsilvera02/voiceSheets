@@ -40,17 +40,17 @@ export default function DashboardPage() {
     <div className="mx-auto w-full max-w-6xl space-y-8 p-6">
       <PageHeader
         title="Dashboard"
-        description="Jump back into your work or start something new."
+        description="Retoma tu trabajo o empieza algo nuevo."
         actions={
           <>
             <Button variant="outline" asChild>
               <Link href="/templates/new">
-                <LayoutTemplate className="h-4 w-4" /> New template
+                <LayoutTemplate className="h-4 w-4" /> Nueva plantilla
               </Link>
             </Button>
             <Button asChild>
               <Link href="/spreadsheets?new=1">
-                <Plus className="h-4 w-4" /> New spreadsheet
+                <Plus className="h-4 w-4" /> Nueva hoja de cálculo
               </Link>
             </Button>
           </>
@@ -60,13 +60,13 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           icon={FileSpreadsheet}
-          label="Spreadsheets"
+          label="Hojas de cálculo"
           value={recent.data?.meta.total}
           href="/spreadsheets"
         />
         <StatCard
           icon={LayoutTemplate}
-          label="Templates"
+          label="Plantillas"
           value={templates.data?.meta.total}
           href="/templates"
         />
@@ -80,9 +80,9 @@ export default function DashboardPage() {
                       <Sparkles className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium">Voice entry</p>
+                      <p className="text-sm font-medium">Entrada por voz</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        Choose a spreadsheet to dictate into
+                        Elige una hoja de cálculo para dictar
                       </p>
                     </div>
                     <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
@@ -91,7 +91,7 @@ export default function DashboardPage() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>Dictate a row into…</DropdownMenuLabel>
+              <DropdownMenuLabel>Dicta una fila en…</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {sheets.slice(0, 8).map((s) => (
                 <DropdownMenuItem
@@ -112,9 +112,9 @@ export default function DashboardPage() {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">Voice entry</p>
+                  <p className="text-sm font-medium">Entrada por voz</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    Create a spreadsheet to start dictating
+                    Crea una hoja de cálculo para empezar a dictar
                   </p>
                 </div>
               </CardContent>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Star className="h-4 w-4 text-amber-500" />
-          <h2 className="text-sm font-semibold text-muted-foreground">Favorites</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground">Favoritos</h2>
         </div>
         {favorites.isLoading ? (
           <CardGridSkeleton />
@@ -138,13 +138,13 @@ export default function DashboardPage() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Star a spreadsheet to pin it here for quick access.
+            Marca una hoja de cálculo como favorita para fijarla aquí.
           </p>
         )}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Recently edited</h2>
+        <h2 className="text-sm font-semibold text-muted-foreground">Editado recientemente</h2>
         {recent.isLoading ? (
           <CardGridSkeleton />
         ) : recent.data && recent.data.data.length > 0 ? (
@@ -156,12 +156,12 @@ export default function DashboardPage() {
         ) : (
           <EmptyState
             icon={FileSpreadsheet}
-            title="No spreadsheets yet"
-            description="Create a template, then spin up your first spreadsheet from it."
+            title="Aún no hay hojas de cálculo"
+            description="Crea una plantilla y luego genera tu primera hoja de cálculo a partir de ella."
             action={
               <Button asChild>
                 <Link href="/templates/new">
-                  <Plus className="h-4 w-4" /> Create a template
+                  <Plus className="h-4 w-4" /> Crear plantilla
                 </Link>
               </Button>
             }
@@ -227,7 +227,7 @@ function SheetCard({
               {sheet.templateName}
             </Badge>
           )}
-          <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} rows</span>
+          <span className="shrink-0 whitespace-nowrap">{sheet.rowCount} filas</span>
           <span className="ml-auto shrink-0 whitespace-nowrap">
             {formatDistanceToNow(new Date(sheet.lastActivityAt), { addSuffix: true })}
           </span>

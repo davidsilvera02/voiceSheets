@@ -11,19 +11,19 @@ import { COLUMN_TYPES, COLUMN_TYPE_META, type ColumnType } from "@/lib/columns";
 function examplePlaceholder(type: ColumnType, options: string[]): string {
   switch (type) {
     case "NUMBER":
-      return "e.g. 30";
+      return "p. ej. 30";
     case "CURRENCY":
-      return "e.g. 4.50";
+      return "p. ej. 4.50";
     case "DATE":
-      return "e.g. 2026-08-01";
+      return "p. ej. 2026-08-01";
     case "BOOLEAN":
-      return "e.g. true";
+      return "p. ej. true";
     case "DROPDOWN":
-      return options[0] ? `e.g. ${options[0]}` : "e.g. High";
+      return options[0] ? `p. ej. ${options[0]}` : "p. ej. Alta";
     case "LONG_TEXT":
-      return "e.g. Ships within two weeks";
+      return "p. ej. Se envía en dos semanas";
     default:
-      return "e.g. Acme Corp";
+      return "p. ej. Acme Corp";
   }
 }
 import { Button } from "@/components/ui/button";
@@ -102,14 +102,14 @@ export function ColumnRow({
             className="cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent active:cursor-grabbing"
             {...attributes}
             {...listeners}
-            aria-label="Drag to reorder"
+            aria-label="Arrastra para reordenar"
           >
             <GripVertical className="h-4 w-4" />
           </button>
           <Input
             value={column.name}
             onChange={(e) => set("name", e.target.value)}
-            placeholder="Column name"
+            placeholder="Nombre de la columna"
             className="h-9 flex-1"
           />
         </div>
@@ -121,7 +121,7 @@ export function ColumnRow({
           >
             <SelectTrigger
               className="h-9 flex-1 sm:w-40 sm:flex-none"
-              title={locked ? "Type is locked while spreadsheets exist" : undefined}
+              title={locked ? "El tipo está bloqueado mientras existan hojas de cálculo" : undefined}
             >
               <SelectValue />
             </SelectTrigger>
@@ -138,9 +138,9 @@ export function ColumnRow({
               checked={column.required}
               onCheckedChange={(v) => set("required", v)}
               disabled={locked}
-              aria-label="Required"
+              aria-label="Obligatorio"
             />
-            <span className="text-xs text-muted-foreground">Req</span>
+            <span className="text-xs text-muted-foreground">Oblig</span>
           </div>
           <Button
             type="button"
@@ -168,16 +168,16 @@ export function ColumnRow({
       {expanded && (
         <div className="grid gap-4 border-t p-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Description</Label>
+            <Label className="text-xs">Descripción</Label>
             <Input
               value={column.description}
               onChange={(e) => set("description", e.target.value)}
-              placeholder="What this column holds"
+              placeholder="Qué contiene esta columna"
               className="h-8"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Example value</Label>
+            <Label className="text-xs">Valor de ejemplo</Label>
             <Input
               value={column.example}
               onChange={(e) => set("example", e.target.value)}
@@ -186,17 +186,17 @@ export function ColumnRow({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Default value</Label>
+            <Label className="text-xs">Valor predeterminado</Label>
             <Input
               value={column.defaultValue}
               onChange={(e) => set("defaultValue", e.target.value)}
-              placeholder="Prefilled for new rows"
+              placeholder="Se rellena en las filas nuevas"
               className="h-8"
             />
           </div>
           {(column.type === "CURRENCY") && (
             <div className="space-y-1.5">
-              <Label className="text-xs">Currency code</Label>
+              <Label className="text-xs">Código de moneda</Label>
               <Input
                 value={column.currency}
                 onChange={(e) => set("currency", e.target.value.toUpperCase().slice(0, 3))}
@@ -207,7 +207,7 @@ export function ColumnRow({
           )}
           {column.type === "DROPDOWN" && (
             <div className="space-y-1.5 sm:col-span-2">
-              <Label className="text-xs">Options</Label>
+              <Label className="text-xs">Opciones</Label>
               <div className="space-y-1.5">
                 {column.options.map((opt, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export function ColumnRow({
                         next[i] = e.target.value;
                         set("options", next);
                       }}
-                      placeholder={`Option ${i + 1}`}
+                      placeholder={`Opción ${i + 1}`}
                       className="h-8 flex-1"
                       autoFocus={i === column.options.length - 1 && opt === ""}
                     />
@@ -229,7 +229,7 @@ export function ColumnRow({
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={() => set("options", column.options.filter((_, j) => j !== i))}
-                      aria-label="Remove option"
+                      aria-label="Eliminar opción"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -242,26 +242,26 @@ export function ColumnRow({
                   className="h-8"
                   onClick={() => set("options", [...column.options, ""])}
                 >
-                  <Plus className="h-4 w-4" /> Add option
+                  <Plus className="h-4 w-4" /> Añadir opción
                 </Button>
                 {column.options.length === 0 && (
                   <p className="text-[11px] text-muted-foreground">
-                    Add at least one choice for this dropdown.
+                    Añade al menos una opción para esta lista desplegable.
                   </p>
                 )}
               </div>
             </div>
           )}
           <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs">AI hint</Label>
+            <Label className="text-xs">Sugerencia para la IA</Label>
             <Textarea
               value={column.aiHint}
               onChange={(e) => set("aiHint", e.target.value)}
-              placeholder="Explain this field to the AI, e.g. 'The vendor's legal company name, not a person.'"
+              placeholder="Explica este campo a la IA, p. ej. 'El nombre legal de la empresa proveedora, no una persona.'"
               rows={2}
             />
             <p className="text-[11px] text-muted-foreground">
-              Used when generating rows from voice/dictation to help the AI pick the right value.
+              Se usa al generar filas por voz/dictado para ayudar a la IA a elegir el valor correcto.
             </p>
           </div>
         </div>

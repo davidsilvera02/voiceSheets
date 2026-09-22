@@ -31,8 +31,8 @@ export default function SettingsPage() {
 
   function save(patch: Record<string, unknown>) {
     update.mutate(patch, {
-      onSuccess: () => toast.success("Settings saved"),
-      onError: () => toast.error("Failed to save settings"),
+      onSuccess: () => toast.success("Configuración guardada"),
+      onError: () => toast.error("No se pudo guardar la configuración"),
     });
   }
 
@@ -52,18 +52,18 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
-      <PageHeader title="Settings" description="Personalize VoiceSheets to fit your workflow." />
+      <PageHeader title="Configuración" description="Personaliza VoiceSheets según tu flujo de trabajo." />
 
       {me.data && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Account</CardTitle>
+            <CardTitle className="text-base">Cuenta</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <Avatar>
                 {me.data.user.imageUrl && (
-                  <AvatarImage src={me.data.user.imageUrl} alt={me.data.user.name ?? "You"} />
+                  <AvatarImage src={me.data.user.imageUrl} alt={me.data.user.name ?? "Tú"} />
                 )}
                 <AvatarFallback>
                   {(me.data.user.name ?? me.data.user.email ?? "U")
@@ -75,16 +75,16 @@ export default function SettingsPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{me.data.user.name ?? "You"}</p>
+                <p className="truncate text-sm font-medium">{me.data.user.name ?? "Tú"}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {me.data.capabilities.clerk ? me.data.user.email : "Single-user dev mode"}
+                  {me.data.capabilities.clerk ? me.data.user.email : "Modo de desarrollo de un solo usuario"}
                 </p>
               </div>
             </div>
             {me.data.capabilities.clerk && (
               <SignOutButton redirectUrl="/sign-in">
                 <Button variant="outline" size="sm">
-                  <LogOut className="h-4 w-4" /> Sign out
+                  <LogOut className="h-4 w-4" /> Cerrar sesión
                 </Button>
               </SignOutButton>
             )}
@@ -94,10 +94,10 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Appearance & formats</CardTitle>
+          <CardTitle className="text-base">Apariencia y formatos</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-5 sm:grid-cols-2">
-          <Field label="Theme">
+          <Field label="Tema">
             <Select
               value={s.theme}
               onValueChange={(v) => {
@@ -109,13 +109,13 @@ export default function SettingsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System</SelectItem>
+                <SelectItem value="light">Claro</SelectItem>
+                <SelectItem value="dark">Oscuro</SelectItem>
+                <SelectItem value="system">Sistema</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Default currency">
+          <Field label="Moneda predeterminada">
             <Select value={s.currency} onValueChange={(v) => save({ currency: v })}>
               <SelectTrigger>
                 <SelectValue />
@@ -129,7 +129,7 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Date format">
+          <Field label="Formato de fecha">
             <Select value={s.dateFormat} onValueChange={(v) => save({ dateFormat: v })}>
               <SelectTrigger>
                 <SelectValue />
@@ -143,7 +143,7 @@ export default function SettingsPage() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Default export format">
+          <Field label="Formato de exportación predeterminado">
             <Select
               value={exp.format ?? "xlsx"}
               onValueChange={(v) => save({ exportDefaults: { ...exp, format: v } })}
@@ -162,12 +162,12 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">AI preferences</CardTitle>
+          <CardTitle className="text-base">Preferencias de IA</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <ToggleRow
-            label="Autocomplete suggestions"
-            description="Suggest previously entered vendors and products while typing."
+            label="Sugerencias de autocompletado"
+            description="Sugiere proveedores y productos ingresados anteriormente mientras escribes."
             checked={ai.autoSuggest ?? true}
             onChange={(v) => save({ aiPreferences: { ...ai, autoSuggest: v } })}
           />
@@ -176,26 +176,26 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Integrations</CardTitle>
+          <CardTitle className="text-base">Integraciones</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <CapabilityRow
             icon={ShieldCheck}
-            label="Clerk authentication"
+            label="Autenticación con Clerk"
             enabled={me.data?.capabilities.clerk}
-            offNote="Running in single-user dev mode"
+            offNote="Ejecutándose en modo de desarrollo de un solo usuario"
           />
           <CapabilityRow
             icon={Cpu}
-            label="Anthropic Claude (AI extraction)"
+            label="Anthropic Claude (extracción con IA)"
             enabled={me.data?.capabilities.anthropic}
-            offNote="Using built-in heuristic parser fallback"
+            offNote="Usando el analizador heurístico integrado como alternativa"
           />
           <CapabilityRow
             icon={Mic}
-            label="Whisper transcription"
+            label="Transcripción con Whisper"
             enabled={me.data?.capabilities.whisper}
-            offNote="Using browser speech recognition fallback"
+            offNote="Usando el reconocimiento de voz del navegador como alternativa"
           />
         </CardContent>
       </Card>
@@ -256,11 +256,11 @@ function CapabilityRow({
       </div>
       {enabled ? (
         <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-          <Check className="h-3.5 w-3.5" /> Active
+          <Check className="h-3.5 w-3.5" /> Activo
         </span>
       ) : (
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <X className="h-3.5 w-3.5" /> Fallback
+          <X className="h-3.5 w-3.5" /> Alternativa
         </span>
       )}
     </div>

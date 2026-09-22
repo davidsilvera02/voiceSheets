@@ -36,7 +36,7 @@ import { useCreateRow } from "@/hooks/use-rows";
 import { ApiClientError } from "@/lib/api-client";
 
 const DEFAULT_VOICE_EXAMPLE =
-  "e.g. Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday.";
+  "p. ej. Pide 30 cajas de papel A4 a Office Depot a 4.50 cada una, para el próximo viernes.";
 
 export function VoiceEntryDialog({
   open,
@@ -110,15 +110,15 @@ export function VoiceEntryDialog({
 
   async function generate(text?: string) {
     const source = (text ?? transcript).trim();
-    if (!source) return toast.error("Record or type something first");
+    if (!source) return toast.error("Graba o escribe algo primero");
     try {
       const r = await extract.mutateAsync({ transcript: source });
       applyResult(r);
       if (r.usedFallback) {
-        toast.info("Used the built-in parser (no AI key configured). Review carefully.");
+        toast.info("Se usó el analizador integrado (no hay clave de IA configurada). Revisa con cuidado.");
       }
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Extraction failed");
+      toast.error(error instanceof ApiClientError ? error.message : "Error en la extracción");
     }
   }
 
@@ -138,7 +138,7 @@ export function VoiceEntryDialog({
       (c) => c.required && (coerced[c.key] === null || coerced[c.key] === "" || coerced[c.key] === undefined),
     );
     if (missingRequired.length > 0) {
-      return toast.error(`Please fill: ${missingRequired.map((c) => c.name).join(", ")}`);
+      return toast.error(`Completa: ${missingRequired.map((c) => c.name).join(", ")}`);
     }
     const meta: Record<string, { aiGenerated: boolean; confidence: number | null }> = {};
     for (const c of columns) {
@@ -150,11 +150,11 @@ export function VoiceEntryDialog({
     }
     try {
       await createRow.mutateAsync({ values: coerced, source: "VOICE", meta });
-      toast.success("Row added from voice");
+      toast.success("Fila añadida por voz");
       reset();
       onOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof ApiClientError ? error.message : "Failed to add row");
+      toast.error(error instanceof ApiClientError ? error.message : "No se pudo añadir la fila");
     }
   }
 
@@ -168,10 +168,10 @@ export function VoiceEntryDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" /> Voice entry
+            <Sparkles className="h-5 w-5 text-primary" /> Entrada por voz
           </DialogTitle>
           <DialogDescription>
-            Dictate a record — the AI drafts a row from your transcript. Review it below and add it in one step.
+            Dicta un registro — la IA genera una fila a partir de tu transcripción. Revísala abajo y añádela en un solo paso.
           </DialogDescription>
         </DialogHeader>
 
@@ -211,7 +211,7 @@ export function VoiceEntryDialog({
               <button
                 type="button"
                 onClick={discardRecording}
-                title="Discard recording"
+                title="Descartar grabación"
                 className="flex h-9 w-9 items-center justify-center rounded-full border bg-background text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
               >
                 <X className="h-4 w-4" />
@@ -220,24 +220,24 @@ export function VoiceEntryDialog({
           </div>
           <p className="text-xs text-muted-foreground">
             {recorder.mode === "unsupported"
-              ? "Voice capture unavailable — type the transcript below."
+              ? "Captura de voz no disponible — escribe la transcripción abajo."
               : isRecording
-                ? "Listening… click to stop."
+                ? "Escuchando… haz clic para detener."
                 : isTranscribing
-                  ? "Transcribing…"
+                  ? "Transcribiendo…"
                   : result
-                    ? "Review below — or record again to start over."
-                    : "Click to start dictating."}
+                    ? "Revisa abajo — o graba de nuevo para empezar otra vez."
+                    : "Haz clic para empezar a dictar."}
           </p>
           {recorder.error && <p className="text-xs text-destructive">{recorder.error}</p>}
         </div>
 
         {/* Transcript */}
         <div className="space-y-1.5">
-          <Label className="text-xs">Transcript</Label>
+          <Label className="text-xs">Transcripción</Label>
           {isRecording || isTranscribing ? (
             <div className="flex min-h-[76px] items-center justify-center rounded-md border bg-muted/20">
-              <span className="shimmer-text text-sm font-semibold">Transcribing…</span>
+              <span className="shimmer-text text-sm font-semibold">Transcribiendo…</span>
             </div>
           ) : (
             <Textarea
@@ -252,7 +252,7 @@ export function VoiceEntryDialog({
         {/* Drafting indicator (first generation) */}
         {generating && !result && (
           <div className="flex items-center justify-center gap-2 rounded-lg border p-6 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Drafting the row from your transcript…
+            <Loader2 className="h-4 w-4 animate-spin" /> Generando la fila a partir de tu transcripción…
           </div>
         )}
 
@@ -261,13 +261,13 @@ export function VoiceEntryDialog({
           <ScrollArea className="max-h-[38vh] rounded-lg border p-3">
             <div className="mb-2 flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> High
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Alta
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-amber-500" /> Medium
+                <span className="h-2 w-2 rounded-full bg-amber-500" /> Media
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-red-500" /> Low
+                <span className="h-2 w-2 rounded-full bg-red-500" /> Baja
               </span>
             </div>
             <div className="space-y-3">
@@ -285,7 +285,7 @@ export function VoiceEntryDialog({
             </div>
             {result.notes && (
               <p className="mt-3 rounded bg-muted p-2 text-xs text-muted-foreground">
-                <span className="font-medium">AI notes:</span> {result.notes}
+                <span className="font-medium">Notas de la IA:</span> {result.notes}
               </p>
             )}
           </ScrollArea>
@@ -295,7 +295,7 @@ export function VoiceEntryDialog({
           <div>
             {result ? (
               <Button variant="outline" onClick={() => generate()} disabled={generating}>
-                <RefreshCw className={cn("h-4 w-4", generating && "animate-spin")} /> Regenerate
+                <RefreshCw className={cn("h-4 w-4", generating && "animate-spin")} /> Regenerar
               </Button>
             ) : (
               transcript.trim() && (
@@ -305,17 +305,17 @@ export function VoiceEntryDialog({
                   ) : (
                     <Sparkles className="h-4 w-4" />
                   )}{" "}
-                  Draft row
+                  Generar fila
                 </Button>
               )
             )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => handleOpenChange(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={commit} disabled={!result || generating || createRow.isPending}>
-              <Send className="h-4 w-4" /> {createRow.isPending ? "Adding…" : "Add row"}
+              <Send className="h-4 w-4" /> {createRow.isPending ? "Añadiendo…" : "Añadir fila"}
             </Button>
           </div>
         </DialogFooter>
@@ -356,7 +356,7 @@ function ReviewField({
         </Label>
         {touched ? (
           <Badge variant="success" className="text-[10px]">
-            edited
+            editado
           </Badge>
         ) : (
           level && (

@@ -58,7 +58,7 @@ export function FieldInput({
               return (
                 <Select value={field.value ?? ""} onValueChange={field.onChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose…" />
+                    <SelectValue placeholder="Elegir…" />
                   </SelectTrigger>
                   <SelectContent>
                     {(column.options ?? []).map((opt) => (

@@ -13,21 +13,21 @@ export const CONFIDENCE_META: Record<
   { label: string; dot: string; text: string; border: string; ring: string }
 > = {
   high: {
-    label: "High confidence",
+    label: "Confianza alta",
     dot: "bg-emerald-500",
     text: "text-emerald-600 dark:text-emerald-400",
     border: "border-l-emerald-500",
     ring: "ring-emerald-500/40",
   },
   medium: {
-    label: "Medium confidence — please review",
+    label: "Confianza media — revísalo",
     dot: "bg-amber-500",
     text: "text-amber-600 dark:text-amber-400",
     border: "border-l-amber-500",
     ring: "ring-amber-500/40",
   },
   low: {
-    label: "Low confidence — likely needs correction",
+    label: "Confianza baja — probablemente necesite corrección",
     dot: "bg-red-500",
     text: "text-red-600 dark:text-red-400",
     border: "border-l-red-500",

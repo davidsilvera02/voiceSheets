@@ -32,9 +32,9 @@ export function StatsBar({
             <span className="font-medium">{stat.name}</span>
             <div className="flex gap-3 text-muted-foreground">
               <span title="Total">Σ {fmt(stat.sum)}</span>
-              <span title="Average">x̄ {fmt(stat.avg)}</span>
-              <span title="Min">↓ {fmt(stat.min)}</span>
-              <span title="Max">↑ {fmt(stat.max)}</span>
+              <span title="Promedio">x̄ {fmt(stat.avg)}</span>
+              <span title="Mínimo">↓ {fmt(stat.min)}</span>
+              <span title="Máximo">↑ {fmt(stat.max)}</span>
             </div>
           </div>
         );

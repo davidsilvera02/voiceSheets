@@ -30,7 +30,7 @@ export default function TemplateDetailPage() {
       </div>
     );
   }
-  if (!data) return <div className="p-6 text-sm text-muted-foreground">Template not found.</div>;
+  if (!data) return <div className="p-6 text-sm text-muted-foreground">Plantilla no encontrada.</div>;
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
@@ -48,11 +48,11 @@ export default function TemplateDetailPage() {
           <>
             <Button variant="outline" asChild>
               <Link href={`/templates/${data.id}/edit`}>
-                <Pencil className="h-4 w-4" /> Edit
+                <Pencil className="h-4 w-4" /> Editar
               </Link>
             </Button>
             <Button onClick={() => setCreateOpen(true)}>
-              <FileSpreadsheet className="h-4 w-4" /> New spreadsheet
+              <FileSpreadsheet className="h-4 w-4" /> Nueva hoja de cálculo
             </Button>
           </>
         }
@@ -63,10 +63,10 @@ export default function TemplateDetailPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Column</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Required</TableHead>
-                <TableHead>AI hint</TableHead>
+                <TableHead>Columna</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Obligatorio</TableHead>
+                <TableHead>Sugerencia para la IA</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -83,7 +83,7 @@ export default function TemplateDetailPage() {
                       {COLUMN_TYPE_META[c.type].label}
                     </Badge>
                   </TableCell>
-                  <TableCell>{c.required ? "Yes" : "—"}</TableCell>
+                  <TableCell>{c.required ? "Sí" : "—"}</TableCell>
                   <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
                     {c.aiHint ?? "—"}
                   </TableCell>
@@ -96,7 +96,7 @@ export default function TemplateDetailPage() {
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Spreadsheets from this template
+          Hojas de cálculo de esta plantilla
         </h2>
         {sheets.data && sheets.data.data.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,14 +105,14 @@ export default function TemplateDetailPage() {
                 <Card className="transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft-md">
                   <CardContent className="p-4">
                     <p className="font-medium">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">{s.rowCount} rows</p>
+                    <p className="text-xs text-muted-foreground">{s.rowCount} filas</p>
                   </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No spreadsheets yet.</p>
+          <p className="text-sm text-muted-foreground">Aún no hay hojas de cálculo.</p>
         )}
       </section>
 

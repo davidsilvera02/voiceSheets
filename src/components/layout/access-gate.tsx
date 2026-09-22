@@ -31,10 +31,10 @@ function Shell({
 /** Shown when a Clerk user isn't a member of any organization yet. */
 export function NoOrganizationScreen() {
   return (
-    <Shell icon={<Building2 className="h-5 w-5" />} title="No organization yet">
+    <Shell icon={<Building2 className="h-5 w-5" />} title="Aún no tienes organización">
       <p>
-        Your account isn&apos;t part of an organization yet. Ask your administrator to
-        invite you, or contact Binaria Analytics to get your team set up.
+        Tu cuenta aún no forma parte de una organización. Pídele a tu administrador que
+        te invite, o contacta a Binaria Analytics para configurar a tu equipo.
       </p>
       <div className="mt-5 flex justify-center">
         <GateSignOut />
@@ -47,10 +47,10 @@ export function NoOrganizationScreen() {
 export function AccessPendingScreen({ status }: { status: AccessStatus }) {
   if (status === "SUSPENDED") {
     return (
-      <Shell icon={<ShieldX className="h-5 w-5" />} title="Access suspended">
+      <Shell icon={<ShieldX className="h-5 w-5" />} title="Acceso suspendido">
         <p>
-          Your organization&apos;s access to VoiceSheets is currently suspended.
-          Please contact Binaria Analytics to restore it.
+          El acceso de tu organización a VoiceSheets está actualmente suspendido.
+          Por favor, contacta a Binaria Analytics para restaurarlo.
         </p>
         <div className="mt-5 flex justify-center">
           <GateSignOut />
@@ -59,10 +59,10 @@ export function AccessPendingScreen({ status }: { status: AccessStatus }) {
     );
   }
   return (
-    <Shell icon={<Clock className="h-5 w-5" />} title="Access pending">
+    <Shell icon={<Clock className="h-5 w-5" />} title="Acceso pendiente">
       <p>
-        Your organization is set up and waiting to be activated. You&apos;ll be able
-        to sign in as soon as access is granted. Thanks for your patience!
+        Tu organización está configurada y en espera de ser activada. Podrás
+        iniciar sesión tan pronto como se otorgue el acceso. ¡Gracias por tu paciencia!
       </p>
       <div className="mt-5 flex justify-center">
         <GateSignOut />

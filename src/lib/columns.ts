@@ -53,13 +53,13 @@ export const COLUMN_TYPE_META: Record<
   ColumnType,
   { label: string; description: string; icon: string }
 > = {
-  TEXT: { label: "Text", description: "Short single-line text", icon: "Type" },
-  LONG_TEXT: { label: "Long text", description: "Multi-line notes", icon: "AlignLeft" },
-  NUMBER: { label: "Number", description: "Numeric value", icon: "Hash" },
-  CURRENCY: { label: "Currency", description: "Monetary amount", icon: "DollarSign" },
-  DATE: { label: "Date", description: "Calendar date", icon: "Calendar" },
-  BOOLEAN: { label: "Checkbox", description: "True / false", icon: "CheckSquare" },
-  DROPDOWN: { label: "Dropdown", description: "Choose from a list", icon: "List" },
+  TEXT: { label: "Texto", description: "Texto corto de una línea", icon: "Type" },
+  LONG_TEXT: { label: "Texto largo", description: "Notas de varias líneas", icon: "AlignLeft" },
+  NUMBER: { label: "Número", description: "Valor numérico", icon: "Hash" },
+  CURRENCY: { label: "Moneda", description: "Importe monetario", icon: "DollarSign" },
+  DATE: { label: "Fecha", description: "Fecha del calendario", icon: "Calendar" },
+  BOOLEAN: { label: "Casilla", description: "Verdadero / falso", icon: "CheckSquare" },
+  DROPDOWN: { label: "Lista desplegable", description: "Elegir de una lista", icon: "List" },
 };
 
 export function isEmpty(value: CellValue): boolean {
@@ -167,7 +167,7 @@ export function formatCellValue(
         : new Intl.NumberFormat(locale).format(n);
     }
     case "BOOLEAN":
-      return value ? "Yes" : "No";
+      return value ? "Sí" : "No";
     case "DATE": {
       const iso = parseDate(value);
       return iso ?? String(value);
@@ -183,27 +183,27 @@ export function formatCellValue(
  */
 export function validateCellValue(column: ColumnDefinition, value: CellValue): string | null {
   if (isEmpty(value)) {
-    return column.required ? `${column.name} is required` : null;
+    return column.required ? `${column.name} es obligatorio` : null;
   }
   switch (column.type) {
     case "NUMBER":
     case "CURRENCY": {
-      if (typeof value !== "number") return `${column.name} must be a number`;
+      if (typeof value !== "number") return `${column.name} debe ser un número`;
       const { min, max } = column.config ?? {};
-      if (min !== undefined && value < min) return `${column.name} must be ≥ ${min}`;
-      if (max !== undefined && value > max) return `${column.name} must be ≤ ${max}`;
+      if (min !== undefined && value < min) return `${column.name} debe ser ≥ ${min}`;
+      if (max !== undefined && value > max) return `${column.name} debe ser ≤ ${max}`;
       return null;
     }
     case "DATE":
-      return parseDate(value) ? null : `${column.name} must be a valid date`;
+      return parseDate(value) ? null : `${column.name} debe ser una fecha válida`;
     case "BOOLEAN":
-      return typeof value === "boolean" ? null : `${column.name} must be true or false`;
+      return typeof value === "boolean" ? null : `${column.name} debe ser verdadero o falso`;
     case "DROPDOWN": {
       const options = column.options ?? [];
       if (options.length === 0) return null;
       return options.some((o) => o === value)
         ? null
-        : `${column.name} must be one of: ${options.join(", ")}`;
+        : `${column.name} debe ser uno de: ${options.join(", ")}`;
     }
     default:
       return null;
@@ -219,7 +219,7 @@ export function zodForColumn(column: ColumnDefinition): z.ZodTypeAny {
       schema = z.preprocess(
         (v) => (v === "" || v === null || v === undefined ? undefined : parseNumeric(v)),
         column.required
-          ? z.number({ invalid_type_error: `${column.name} must be a number` })
+          ? z.number({ invalid_type_error: `${column.name} debe ser un número` })
           : z.number().optional(),
       );
       break;
@@ -230,7 +230,7 @@ export function zodForColumn(column: ColumnDefinition): z.ZodTypeAny {
       schema = z.preprocess(
         (v) => (v === "" || v === null || v === undefined ? undefined : parseDate(v)),
         column.required
-          ? z.string({ required_error: `${column.name} is required` })
+          ? z.string({ required_error: `${column.name} es obligatorio` })
           : z.string().optional(),
       );
       break;
@@ -243,7 +243,7 @@ export function zodForColumn(column: ColumnDefinition): z.ZodTypeAny {
     default: {
       const base = z.string();
       schema = column.required
-        ? base.min(1, `${column.name} is required`)
+        ? base.min(1, `${column.name} es obligatorio`)
         : base.optional();
     }
   }

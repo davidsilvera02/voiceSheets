@@ -155,7 +155,7 @@ export function DataGrid({
                 <Checkbox
                   checked={allSelected ? true : someSelected ? "indeterminate" : false}
                   onCheckedChange={(v) => table.toggleAllRowsSelected(Boolean(v))}
-                  aria-label="Select all"
+                  aria-label="Seleccionar todo"
                 />
               </th>
               {table.getHeaderGroups()[0]?.headers.map((header) => {
@@ -206,7 +206,7 @@ export function DataGrid({
                   <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(v) => row.toggleSelected(Boolean(v))}
-                    aria-label="Select row"
+                    aria-label="Seleccionar fila"
                   />
                 </td>
                 {columns.map((col, c) => (
@@ -257,7 +257,7 @@ export function DataGrid({
             {pageRows.length === 0 && search && (
               <tr>
                 <td colSpan={columns.length + 2} className="p-8 text-center text-sm text-muted-foreground">
-                  No rows match your search.
+                  Ninguna fila coincide con tu búsqueda.
                 </td>
               </tr>
             )}
@@ -272,7 +272,7 @@ export function DataGrid({
       {/* Pagination */}
       <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          {table.getFilteredRowModel().rows.length} row
+          {table.getFilteredRowModel().rows.length} fila
           {table.getFilteredRowModel().rows.length === 1 ? "" : "s"}
         </span>
         <div className="flex items-center gap-2">
@@ -282,10 +282,10 @@ export function DataGrid({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            Anterior
           </Button>
           <span className="tabular-nums">
-            Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
+            Página {table.getState().pagination.pageIndex + 1} de {Math.max(1, table.getPageCount())}
           </span>
           <Button
             variant="outline"
@@ -293,7 +293,7 @@ export function DataGrid({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Siguiente
           </Button>
         </div>
       </div>
@@ -326,7 +326,7 @@ function InlineAddRow({
     const missing = columns.filter((c) => c.required && isEmpty(coercedFor(c)));
     if (missing.length > 0) {
       toast.error(
-        `Can't add row — fill required field${missing.length > 1 ? "s" : ""}: ${missing
+        `No se puede añadir la fila — completa el${missing.length > 1 ? "os" : ""} campo${missing.length > 1 ? "s" : ""} obligatorio${missing.length > 1 ? "s" : ""}: ${missing
           .map((c) => c.name)
           .join(", ")}`,
       );
@@ -352,8 +352,8 @@ function InlineAddRow({
           className="h-7 w-7 text-primary disabled:text-muted-foreground/50"
           disabled={!canAdd}
           onClick={submit}
-          title="Add row"
-          aria-label="Add row"
+          title="Añadir fila"
+          aria-label="Añadir fila"
         >
           <Plus className="h-4 w-4" />
         </Button>

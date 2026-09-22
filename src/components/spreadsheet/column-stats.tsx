@@ -23,7 +23,7 @@ export function ColumnStatsButton({
       <PopoverTrigger asChild>
         <button
           type="button"
-          title="Column statistics"
+          title="Estadísticas de la columna"
           onClick={(e) => e.stopPropagation()}
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus:opacity-100 group-hover:opacity-70"
         >
@@ -87,7 +87,7 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
     <div className="mb-2 flex items-center justify-between border-b pb-2">
       <span className="text-sm font-semibold">{column.name}</span>
       <span className="text-xs text-muted-foreground">
-        {filled.length}/{rows.length} filled ({fillPct}%)
+        {filled.length}/{rows.length} completado ({fillPct}%)
       </span>
     </div>
   );
@@ -96,7 +96,7 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
     return (
       <div>
         {header}
-        <p className="text-sm text-muted-foreground">No rows yet.</p>
+        <p className="text-sm text-muted-foreground">Aún no hay filas.</p>
       </div>
     );
   }
@@ -104,16 +104,16 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
   if (column.type === "NUMBER" || column.type === "CURRENCY") {
     const nums = filled.map((v) => parseNumeric(v)).filter((n): n is number => n !== null);
     if (nums.length === 0)
-      return <div>{header}<p className="text-sm text-muted-foreground">No numeric values.</p></div>;
+      return <div>{header}<p className="text-sm text-muted-foreground">Sin valores numéricos.</p></div>;
     const sum = nums.reduce((a, b) => a + b, 0);
     return (
       <div>
         {header}
-        <StatRow label="Sum" value={fmt(sum)} />
-        <StatRow label="Average" value={fmt(sum / nums.length)} />
-        <StatRow label="Min" value={fmt(Math.min(...nums))} />
-        <StatRow label="Max" value={fmt(Math.max(...nums))} />
-        <StatRow label="Count" value={String(nums.length)} />
+        <StatRow label="Suma" value={fmt(sum)} />
+        <StatRow label="Promedio" value={fmt(sum / nums.length)} />
+        <StatRow label="Mín" value={fmt(Math.min(...nums))} />
+        <StatRow label="Máx" value={fmt(Math.max(...nums))} />
+        <StatRow label="Cantidad" value={String(nums.length)} />
       </div>
     );
   }
@@ -126,8 +126,8 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
     return (
       <div>
         {header}
-        <BarRow label="Checked" count={t} pct={total ? t / total : 0} fill={t / max} />
-        <BarRow label="Unchecked" count={f} pct={total ? f / total : 0} fill={f / max} />
+        <BarRow label="Marcado" count={t} pct={total ? t / total : 0} fill={t / max} />
+        <BarRow label="Sin marcar" count={f} pct={total ? f / total : 0} fill={f / max} />
       </div>
     );
   }
@@ -135,13 +135,13 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
   if (column.type === "DATE") {
     const dates = filled.map((v) => parseDate(v)).filter((d): d is string => d !== null).sort();
     if (dates.length === 0)
-      return <div>{header}<p className="text-sm text-muted-foreground">No dates.</p></div>;
+      return <div>{header}<p className="text-sm text-muted-foreground">Sin fechas.</p></div>;
     return (
       <div>
         {header}
-        <StatRow label="Earliest" value={dates[0]!} />
-        <StatRow label="Latest" value={dates[dates.length - 1]!} />
-        <StatRow label="Count" value={String(dates.length)} />
+        <StatRow label="Primera" value={dates[0]!} />
+        <StatRow label="Última" value={dates[dates.length - 1]!} />
+        <StatRow label="Cantidad" value={String(dates.length)} />
       </div>
     );
   }
@@ -162,7 +162,7 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
     <div>
       {header}
       <p className="mb-1 text-xs text-muted-foreground">
-        {counts.size} distinct value{counts.size === 1 ? "" : "s"}
+        {counts.size} valor{counts.size === 1 ? "" : "es"} distinto{counts.size === 1 ? "" : "s"}
       </p>
       {top.map(([value, count]) => (
         <BarRow
@@ -173,9 +173,9 @@ function StatsContent({ column, rows }: { column: ColumnDefinition; rows: RowDTO
           fill={count / maxCount}
         />
       ))}
-      {top.length === 0 && <p className="text-sm text-muted-foreground">No values.</p>}
+      {top.length === 0 && <p className="text-sm text-muted-foreground">Sin valores.</p>}
       {remaining > 0 && (
-        <p className="mt-1 text-xs text-muted-foreground">+{remaining} more</p>
+        <p className="mt-1 text-xs text-muted-foreground">+{remaining} más</p>
       )}
     </div>
   );

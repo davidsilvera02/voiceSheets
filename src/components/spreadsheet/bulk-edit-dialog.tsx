@@ -60,11 +60,11 @@ export function BulkEditDialog({
     const value: CellValue = column.type === "BOOLEAN" ? boolVal : coerceValue(column, raw);
     try {
       await bulk.mutateAsync({ rowIds, values: { [columnKey]: value } });
-      toast.success(`Updated ${rowIds.length} rows`);
+      toast.success(`Se actualizaron ${rowIds.length} filas`);
       onOpenChange(false);
       onDone();
     } catch {
-      toast.error("Bulk update failed");
+      toast.error("Error en la edición masiva");
     }
   }
 
@@ -72,12 +72,12 @@ export function BulkEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Bulk edit {rowIds.length} rows</DialogTitle>
-          <DialogDescription>Set one column to the same value across all selected rows.</DialogDescription>
+          <DialogTitle>Edición masiva de {rowIds.length} filas</DialogTitle>
+          <DialogDescription>Establece una columna con el mismo valor en todas las filas seleccionadas.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">Column</Label>
+            <Label className="text-xs">Columna</Label>
             <Select value={columnKey} onValueChange={setColumnKey}>
               <SelectTrigger>
                 <SelectValue />
@@ -92,16 +92,16 @@ export function BulkEditDialog({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">New value</Label>
+            <Label className="text-xs">Nuevo valor</Label>
             {column?.type === "BOOLEAN" ? (
               <div className="flex h-9 items-center gap-2">
                 <Checkbox checked={boolVal} onCheckedChange={(v) => setBoolVal(Boolean(v))} />
-                <span className="text-sm text-muted-foreground">{boolVal ? "Checked" : "Unchecked"}</span>
+                <span className="text-sm text-muted-foreground">{boolVal ? "Marcado" : "Sin marcar"}</span>
               </div>
             ) : column?.type === "DROPDOWN" ? (
               <Select value={raw} onValueChange={setRaw}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose…" />
+                  <SelectValue placeholder="Elige…" />
                 </SelectTrigger>
                 <SelectContent>
                   {(column.options ?? []).map((o) => (
@@ -116,17 +116,17 @@ export function BulkEditDialog({
                 value={raw}
                 onChange={(e) => setRaw(e.target.value)}
                 type={column?.type === "DATE" ? "date" : "text"}
-                placeholder="Leave blank to clear"
+                placeholder="Deja en blanco para borrar"
               />
             )}
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Cancelar
           </Button>
           <Button onClick={apply} disabled={bulk.isPending}>
-            {bulk.isPending ? "Applying…" : "Apply to rows"}
+            {bulk.isPending ? "Aplicando…" : "Aplicar a las filas"}
           </Button>
         </DialogFooter>
       </DialogContent>

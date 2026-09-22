@@ -55,14 +55,14 @@ export async function getSpreadsheet(workspaceId: string, id: string) {
     where: { id, workspaceId },
     include: summaryInclude,
   });
-  if (!sheet) throw new NotFoundError("Spreadsheet");
+  if (!sheet) throw new NotFoundError("La hoja de cálculo");
   return serializeSpreadsheet(sheet);
 }
 
 /** Internal helper: load a spreadsheet's raw record + column snapshot. */
 export async function requireSpreadsheet(workspaceId: string, id: string) {
   const sheet = await prisma.spreadsheet.findFirst({ where: { id, workspaceId } });
-  if (!sheet) throw new NotFoundError("Spreadsheet");
+  if (!sheet) throw new NotFoundError("La hoja de cálculo");
   return { sheet, columns: snapshotColumns(sheet.columns) };
 }
 
@@ -74,7 +74,7 @@ export async function createSpreadsheet(
     where: { id: input.templateId, workspaceId: ctx.workspace.id },
     include: { columns: { orderBy: { position: "asc" } } },
   });
-  if (!template) throw new NotFoundError("Template");
+  if (!template) throw new NotFoundError("La plantilla");
 
   const columns: ColumnDefinition[] = template.columns.map((c) => ({
     ...columnToDefinition(c),
@@ -111,7 +111,7 @@ export async function updateSpreadsheet(
   const existing = await prisma.spreadsheet.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
   });
-  if (!existing) throw new NotFoundError("Spreadsheet");
+  if (!existing) throw new NotFoundError("La hoja de cálculo");
 
   let columnsUpdate: Prisma.InputJsonValue | undefined;
   if (input.columns) {
@@ -150,7 +150,7 @@ export async function duplicateSpreadsheet(ctx: AuthContext, id: string, withRow
   const source = await prisma.spreadsheet.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
   });
-  if (!source) throw new NotFoundError("Spreadsheet");
+  if (!source) throw new NotFoundError("La hoja de cálculo");
 
   const sourceRows = withRows
     ? await prisma.row.findMany({
@@ -201,7 +201,7 @@ export async function deleteSpreadsheet(ctx: AuthContext, id: string) {
   const existing = await prisma.spreadsheet.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
   });
-  if (!existing) throw new NotFoundError("Spreadsheet");
+  if (!existing) throw new NotFoundError("La hoja de cálculo");
   await prisma.spreadsheet.delete({ where: { id } });
   await recordAudit({
     workspaceId: ctx.workspace.id,

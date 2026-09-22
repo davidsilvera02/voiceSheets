@@ -32,22 +32,22 @@ const STATUS_META: Record<
   { section: string; hint: string; icon: typeof Building2; iconClass: string; dot: string }
 > = {
   PENDING: {
-    section: "Pending activation",
-    hint: "New organizations waiting for you to grant access.",
+    section: "Pendientes de activación",
+    hint: "Organizaciones nuevas que esperan a que les concedas acceso.",
     icon: Clock,
     iconClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     dot: "bg-amber-500",
   },
   ACTIVE: {
-    section: "Active",
-    hint: "Organizations with access to the app.",
+    section: "Activas",
+    hint: "Organizaciones con acceso a la app.",
     icon: ShieldCheck,
     iconClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     dot: "bg-emerald-500",
   },
   SUSPENDED: {
-    section: "Suspended",
-    hint: "Access revoked — reactivate when ready.",
+    section: "Suspendidas",
+    hint: "Acceso revocado — reactiva cuando quieras.",
     icon: ShieldX,
     iconClass: "bg-destructive/10 text-destructive",
     dot: "bg-destructive",
@@ -69,14 +69,14 @@ export function AdminWorkspaces() {
     onSuccess: (_data, variables) => {
       toast.success(
         variables.status === "ACTIVE"
-          ? "Access granted"
+          ? "Acceso concedido"
           : variables.status === "SUSPENDED"
-            ? "Access revoked"
-            : "Reset to pending",
+            ? "Acceso revocado"
+            : "Restablecer a pendiente",
       );
       qc.invalidateQueries({ queryKey: ["admin", "workspaces"] });
     },
-    onError: (error: Error) => toast.error(error.message || "Update failed"),
+    onError: (error: Error) => toast.error(error.message || "No se pudo actualizar"),
   });
 
   if (query.isLoading) {
@@ -92,7 +92,7 @@ export function AdminWorkspaces() {
   if (query.isError) {
     return (
       <p className="text-sm text-destructive">
-        Could not load organizations: {(query.error as Error).message}
+        No se pudieron cargar las organizaciones: {(query.error as Error).message}
       </p>
     );
   }
@@ -102,8 +102,8 @@ export function AdminWorkspaces() {
     return (
       <EmptyState
         icon={Building2}
-        title="No organizations yet"
-        description="Create an organization in Clerk and invite members — it appears here once someone signs in."
+        title="Aún no hay organizaciones"
+        description="Crea una organización en Clerk e invita a miembros; aparecerá aquí en cuanto alguien inicie sesión."
       />
     );
   }
@@ -159,10 +159,10 @@ function WorkspaceRow({
   const Icon = meta.icon;
   const metaBits = [
     w.ownerEmail,
-    `${w.memberCount} member${w.memberCount === 1 ? "" : "s"}`,
-    `${w.spreadsheetCount} sheet${w.spreadsheetCount === 1 ? "" : "s"}`,
+    `${w.memberCount} miembro${w.memberCount === 1 ? "" : "s"}`,
+    `${w.spreadsheetCount} hoja${w.spreadsheetCount === 1 ? "" : "s"}`,
     w.lastActivityAt
-      ? `active ${formatDistanceToNow(new Date(w.lastActivityAt), { addSuffix: true })}`
+      ? `activa ${formatDistanceToNow(new Date(w.lastActivityAt), { addSuffix: true })}`
       : null,
   ].filter(Boolean);
 
@@ -196,17 +196,17 @@ function WorkspaceRow({
       <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
         {w.accessStatus !== "ACTIVE" && (
           <Button size="sm" disabled={busy} onClick={() => onSetAccess("ACTIVE")}>
-            <Check className="h-3.5 w-3.5" /> Activate
+            <Check className="h-3.5 w-3.5" /> Activar
           </Button>
         )}
         {w.accessStatus === "PENDING" && (
           <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetAccess("SUSPENDED")}>
-            <XCircle className="h-3.5 w-3.5" /> Reject
+            <XCircle className="h-3.5 w-3.5" /> Rechazar
           </Button>
         )}
         {w.accessStatus === "ACTIVE" && (
           <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetAccess("SUSPENDED")}>
-            <ShieldX className="h-3.5 w-3.5" /> Suspend
+            <ShieldX className="h-3.5 w-3.5" /> Suspender
           </Button>
         )}
       </div>

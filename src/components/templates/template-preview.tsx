@@ -26,14 +26,14 @@ export function TemplatePreview({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Preview · {name}</DialogTitle>
+          <DialogTitle>Vista previa · {name}</DialogTitle>
           <DialogDescription>
-            This is how a spreadsheet built from this template will look.
+            Así se verá una hoja de cálculo creada a partir de esta plantilla.
           </DialogDescription>
         </DialogHeader>
         {columns.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Add some columns to see a preview.
+            Añade algunas columnas para ver una vista previa.
           </p>
         ) : (
           <div className="max-h-[60vh] overflow-auto rounded-lg border">
@@ -58,7 +58,7 @@ export function TemplatePreview({
                   <TableRow key={r}>
                     {columns.map((c) => (
                       <TableCell key={c.key} className="whitespace-nowrap text-muted-foreground">
-                        {c.example || <span className="italic opacity-50">empty</span>}
+                        {c.example || <span className="italic opacity-50">vacío</span>}
                       </TableCell>
                     ))}
                   </TableRow>

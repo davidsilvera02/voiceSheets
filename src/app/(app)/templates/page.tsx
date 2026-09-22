@@ -55,12 +55,12 @@ export default function TemplatesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
       <PageHeader
-        title="Templates"
-        description="Reusable column structures that power your spreadsheets."
+        title="Plantillas"
+        description="Estructuras de columnas reutilizables que impulsan tus hojas de cálculo."
         actions={
           <Button asChild>
             <Link href="/templates/new">
-              <Plus className="h-4 w-4" /> New template
+              <Plus className="h-4 w-4" /> Nueva plantilla
             </Link>
           </Button>
         }
@@ -69,12 +69,12 @@ export default function TemplatesPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList>
-            <TabsTrigger value="ACTIVE">Active</TabsTrigger>
-            <TabsTrigger value="ARCHIVED">Archived</TabsTrigger>
+            <TabsTrigger value="ACTIVE">Activas</TabsTrigger>
+            <TabsTrigger value="ARCHIVED">Archivadas</TabsTrigger>
           </TabsList>
         </Tabs>
         <Input
-          placeholder="Search templates…"
+          placeholder="Buscar plantillas…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="sm:max-w-xs"
@@ -90,17 +90,17 @@ export default function TemplatesPage() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={LayoutTemplate}
-          title={tab === "ACTIVE" ? "No templates yet" : "No archived templates"}
+          title={tab === "ACTIVE" ? "Aún no hay plantillas" : "No hay plantillas archivadas"}
           description={
             tab === "ACTIVE"
-              ? "Create a template to define the columns your spreadsheets will use."
-              : "Templates you archive will appear here."
+              ? "Crea una plantilla para definir las columnas que usarán tus hojas de cálculo."
+              : "Las plantillas que archives aparecerán aquí."
           }
           action={
             tab === "ACTIVE" && (
               <Button asChild>
                 <Link href="/templates/new">
-                  <Plus className="h-4 w-4" /> New template
+                  <Plus className="h-4 w-4" /> Nueva plantilla
                 </Link>
               </Button>
             )
@@ -129,19 +129,19 @@ export default function TemplatesPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
                         <Link href={`/templates/${t.id}/edit`}>
-                          <Pencil className="h-4 w-4" /> Edit
+                          <Pencil className="h-4 w-4" /> Editar
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setSheetForTemplate(t.id)}>
-                        <FileSpreadsheet className="h-4 w-4" /> New spreadsheet
+                        <FileSpreadsheet className="h-4 w-4" /> Nueva hoja de cálculo
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={async () => {
                           await duplicate.mutateAsync(t.id);
-                          toast.success("Template duplicated");
+                          toast.success("Plantilla duplicada");
                         }}
                       >
-                        <Copy className="h-4 w-4" /> Duplicate
+                        <Copy className="h-4 w-4" /> Duplicar
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -150,16 +150,16 @@ export default function TemplatesPage() {
                             id: t.id,
                             status: tab === "ACTIVE" ? "ARCHIVED" : "ACTIVE",
                           });
-                          toast.success(tab === "ACTIVE" ? "Template archived" : "Template restored");
+                          toast.success(tab === "ACTIVE" ? "Plantilla archivada" : "Plantilla restaurada");
                         }}
                       >
                         {tab === "ACTIVE" ? (
                           <>
-                            <Archive className="h-4 w-4" /> Archive
+                            <Archive className="h-4 w-4" /> Archivar
                           </>
                         ) : (
                           <>
-                            <ArchiveRestore className="h-4 w-4" /> Restore
+                            <ArchiveRestore className="h-4 w-4" /> Restaurar
                           </>
                         )}
                       </DropdownMenuItem>
@@ -167,7 +167,7 @@ export default function TemplatesPage() {
                         className="text-destructive focus:text-destructive"
                         onClick={() => setDeleteId(t.id)}
                       >
-                        <Trash2 className="h-4 w-4" /> Delete
+                        <Trash2 className="h-4 w-4" /> Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -178,10 +178,10 @@ export default function TemplatesPage() {
               </CardHeader>
               <CardContent className="mt-auto flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <Badge variant="secondary" className="font-normal">
-                  {t.columns.length} columns
+                  {t.columns.length} columnas
                 </Badge>
                 <Badge variant="outline" className="font-normal">
-                  {t.spreadsheetCount} spreadsheets
+                  {t.spreadsheetCount} hojas de cálculo
                 </Badge>
               </CardContent>
             </Card>
@@ -192,14 +192,14 @@ export default function TemplatesPage() {
       <ConfirmDialog
         open={deleteId !== null}
         onOpenChange={(o) => !o && setDeleteId(null)}
-        title="Delete template?"
-        description="This permanently deletes the template. Existing spreadsheets created from it keep their data."
-        confirmLabel="Delete"
+        title="¿Eliminar plantilla?"
+        description="Esto elimina permanentemente la plantilla. Las hojas de cálculo ya creadas a partir de ella conservan sus datos."
+        confirmLabel="Eliminar"
         destructive
         onConfirm={async () => {
           if (deleteId) {
             await remove.mutateAsync(deleteId);
-            toast.success("Template deleted");
+            toast.success("Plantilla eliminada");
             setDeleteId(null);
           }
         }}

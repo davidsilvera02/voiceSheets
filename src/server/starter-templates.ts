@@ -25,20 +25,20 @@ interface StarterTemplate {
 
 /** The single ready-to-use template created for every brand-new workspace. */
 export const STARTER_TEMPLATE: StarterTemplate = {
-  name: "Purchase Requests",
-  description: "Track purchasing requests from vendors.",
+  name: "Solicitudes de compra",
+  description: "Lleva el registro de las solicitudes de compra a proveedores.",
   icon: "ShoppingCart",
   voiceExample:
-    "Order 30 boxes of A4 paper from Office Depot at 4.50 each, needed by next Friday, high priority.",
+    "Pide 30 cajas de papel A4 a Office Depot a 4.50 cada una, para el próximo viernes, prioridad alta.",
   columns: [
-    { key: "vendor_name", name: "Vendor", type: "TEXT", required: true, aiHint: "The supplier's company name, not a person.", example: "Office Depot" },
-    { key: "product", name: "Product", type: "TEXT", required: true, aiHint: "The item being purchased.", example: "A4 printer paper" },
-    { key: "quantity", name: "Quantity", type: "NUMBER", required: true, aiHint: "Number of units ordered.", example: "30" },
-    { key: "unit_price", name: "Unit Price", type: "CURRENCY", currency: "USD", aiHint: "Price per single unit.", example: "4.50" },
-    { key: "needed_by", name: "Needed By", type: "DATE", aiHint: "The date the goods are required.", example: "2026-08-01" },
-    { key: "priority", name: "Priority", type: "DROPDOWN", options: ["Low", "Medium", "High", "Urgent"], aiHint: "Urgency of the request." },
-    { key: "approved", name: "Approved", type: "BOOLEAN", aiHint: "Whether the purchase has been approved." },
-    { key: "notes", name: "Notes", type: "LONG_TEXT", aiHint: "Any extra context." },
+    { key: "vendor_name", name: "Proveedor", type: "TEXT", required: true, aiHint: "El nombre de la empresa proveedora, no de una persona.", example: "Office Depot" },
+    { key: "product", name: "Producto", type: "TEXT", required: true, aiHint: "El artículo que se compra.", example: "Papel para impresora A4" },
+    { key: "quantity", name: "Cantidad", type: "NUMBER", required: true, aiHint: "Número de unidades pedidas.", example: "30" },
+    { key: "unit_price", name: "Precio unitario", type: "CURRENCY", currency: "USD", aiHint: "Precio por unidad.", example: "4.50" },
+    { key: "needed_by", name: "Necesario para", type: "DATE", aiHint: "La fecha en que se necesitan los bienes.", example: "2026-08-01" },
+    { key: "priority", name: "Prioridad", type: "DROPDOWN", options: ["Baja", "Media", "Alta", "Urgente"], aiHint: "Urgencia de la solicitud." },
+    { key: "approved", name: "Aprobado", type: "BOOLEAN", aiHint: "Si la compra ha sido aprobada." },
+    { key: "notes", name: "Notas", type: "LONG_TEXT", aiHint: "Cualquier contexto adicional." },
   ],
 };
 
@@ -52,9 +52,9 @@ function daysFromNow(n: number): string {
 /** A few sample rows so a new sheet doesn't open empty. Keyed by column key. */
 function sampleRows(): Record<string, string | number | boolean>[] {
   return [
-    { vendor_name: "Office Depot", product: "A4 printer paper", quantity: 30, unit_price: 4.5, needed_by: daysFromNow(10), priority: "Medium", approved: true, notes: "Quarterly restock for the main office." },
-    { vendor_name: "Dell", product: "Laptop docking station", quantity: 12, unit_price: 149, needed_by: daysFromNow(21), priority: "High", approved: false, notes: "Requested by IT for new hires." },
-    { vendor_name: "Staples", product: "Ballpoint pens (box of 50)", quantity: 8, unit_price: 6.75, needed_by: daysFromNow(5), priority: "Low", approved: true },
+    { vendor_name: "Office Depot", product: "Papel para impresora A4", quantity: 30, unit_price: 4.5, needed_by: daysFromNow(10), priority: "Media", approved: true, notes: "Reabastecimiento trimestral para la oficina principal." },
+    { vendor_name: "Dell", product: "Estación de acoplamiento para laptop", quantity: 12, unit_price: 149, needed_by: daysFromNow(21), priority: "Alta", approved: false, notes: "Solicitado por TI para nuevos empleados." },
+    { vendor_name: "Staples", product: "Bolígrafos (caja de 50)", quantity: 8, unit_price: 6.75, needed_by: daysFromNow(5), priority: "Baja", approved: true },
   ];
 }
 
@@ -123,8 +123,8 @@ export async function seedWorkspace(
       workspaceId,
       templateId: created.id,
       createdById: userId,
-      name: "Q3 Purchase Requests",
-      description: "Sample spreadsheet — edit or delete these rows to make it your own.",
+      name: "Solicitudes de compra T3",
+      description: "Hoja de cálculo de ejemplo: edita o elimina estas filas para adaptarla.",
       columns: buildColumnSnapshot(template) as unknown as Prisma.InputJsonValue,
     },
   });

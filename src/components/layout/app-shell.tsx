@@ -43,9 +43,9 @@ export interface ShellUser {
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/spreadsheets", label: "Spreadsheets", icon: FileSpreadsheet },
-  { href: "/templates", label: "Templates", icon: LayoutTemplate },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/spreadsheets", label: "Hojas de cálculo", icon: FileSpreadsheet },
+  { href: "/templates", label: "Plantillas", icon: LayoutTemplate },
+  { href: "/settings", label: "Configuración", icon: Settings },
 ];
 
 /**
@@ -56,7 +56,7 @@ function SignOutItem() {
   const { signOut } = useClerk();
   return (
     <DropdownMenuItem onSelect={() => void signOut({ redirectUrl: "/sign-in" })}>
-      <LogOut className="h-4 w-4" /> Sign out
+      <LogOut className="h-4 w-4" /> Cerrar sesión
     </DropdownMenuItem>
   );
 }
@@ -128,9 +128,9 @@ export function AppShell({
       </nav>
       <div className="mt-auto space-y-2">
         <div className="rounded-xl border bg-muted/40 p-3 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Tip</p>
+          <p className="font-medium text-foreground">Consejo</p>
           <p className="mt-1">
-            Press <kbd className="rounded border bg-background px-1">⌘K</kbd> to search anything.
+            Presiona <kbd className="rounded border bg-background px-1">⌘K</kbd> para buscar cualquier cosa.
           </p>
         </div>
         <a
@@ -140,7 +140,7 @@ export function AppShell({
           className="flex flex-col items-center gap-1 rounded-xl border bg-card px-3 py-2.5 shadow-soft transition-colors hover:bg-accent/40"
         >
           <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/70">
-            Powered by
+            Desarrollado por
           </span>
           <BinariaLogo className="text-[15px]" />
         </a>
@@ -184,7 +184,7 @@ export function AppShell({
             className="flex h-9 w-full max-w-sm items-center gap-2 rounded-full border bg-muted/40 px-4 text-sm text-muted-foreground transition-colors hover:bg-muted hover:shadow-sm"
           >
             <Search className="h-4 w-4" />
-            <span>Search…</span>
+            <span>Buscar…</span>
             <kbd className="ml-auto hidden rounded-full border bg-background px-2 text-[10px] sm:inline">
               ⌘K
             </kbd>
@@ -198,24 +198,24 @@ export function AppShell({
                   className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-accent/60"
                 >
                   <Avatar>
-                    {user.imageUrl && <AvatarImage src={user.imageUrl} alt={user.name ?? "You"} />}
+                    {user.imageUrl && <AvatarImage src={user.imageUrl} alt={user.name ?? "Tú"} />}
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
-                  <span className="hidden text-sm font-medium sm:block">{user.name ?? "You"}</span>
+                  <span className="hidden text-sm font-medium sm:block">{user.name ?? "Tú"}</span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel className="truncate">{user.name ?? "You"}</DropdownMenuLabel>
+                <DropdownMenuLabel className="truncate">{user.name ?? "Tú"}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/settings">
-                    <Settings className="h-4 w-4" /> Settings
+                    <Settings className="h-4 w-4" /> Configuración
                   </Link>
                 </DropdownMenuItem>
                 {clerkEnabled ? (
                   <SignOutItem />
                 ) : (
-                  <DropdownMenuItem disabled>Dev mode — not signed in</DropdownMenuItem>
+                  <DropdownMenuItem disabled>Modo desarrollo — no has iniciado sesión</DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

@@ -12,7 +12,7 @@ export function GateSignOut() {
   return (
     <SignOutButton redirectUrl="/sign-in">
       <Button variant="outline" size="sm">
-        <LogOut className="h-4 w-4" /> Sign out
+        <LogOut className="h-4 w-4" /> Cerrar sesión
       </Button>
     </SignOutButton>
   );

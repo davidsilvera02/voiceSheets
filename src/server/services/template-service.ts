@@ -34,7 +34,7 @@ function normalizeColumns(columns: TemplateColumnInput[]) {
     }
     used.add(key);
     if (col.type === "DROPDOWN" && (!col.options || col.options.length === 0)) {
-      throw new ValidationError(`Dropdown column "${col.name}" needs at least one option`);
+      throw new ValidationError(`La columna de lista desplegable "${col.name}" necesita al menos una opción`);
     }
     return {
       key,
@@ -129,7 +129,7 @@ export async function getTemplate(workspaceId: string, id: string) {
     where: { id, workspaceId },
     include: templateInclude,
   });
-  if (!template) throw new NotFoundError("Template");
+  if (!template) throw new NotFoundError("La plantilla");
   return serializeTemplate(template);
 }
 
@@ -163,7 +163,7 @@ export async function updateTemplate(ctx: AuthContext, id: string, input: Update
   const existing = await prisma.template.findFirst({
     where: { id, workspaceId: ctx.workspace.id },
   });
-  if (!existing) throw new NotFoundError("Template");
+  if (!existing) throw new NotFoundError("La plantilla");
 
   const template = await prisma.$transaction(async (tx) => {
     await tx.template.update({
@@ -210,7 +210,7 @@ export async function duplicateTemplate(ctx: AuthContext, id: string) {
     where: { id, workspaceId: ctx.workspace.id },
     include: { columns: true },
   });
-  if (!source) throw new NotFoundError("Template");
+  if (!source) throw new NotFoundError("La plantilla");
 
   const template = await prisma.template.create({
     data: {
@@ -262,7 +262,7 @@ export async function deleteTemplate(ctx: AuthContext, id: string) {
     where: { id, workspaceId: ctx.workspace.id },
     include: { _count: { select: { spreadsheets: true } } },
   });
-  if (!existing) throw new NotFoundError("Template");
+  if (!existing) throw new NotFoundError("La plantilla");
   await prisma.template.delete({ where: { id } });
   await recordAudit({
     workspaceId: ctx.workspace.id,

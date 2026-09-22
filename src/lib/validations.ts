@@ -19,10 +19,10 @@ export const columnConfigSchema = z
 export const templateColumnInputSchema = z.object({
   key: z
     .string()
-    .regex(/^[a-z][a-z0-9_]*$/, "Key must be snake_case")
+    .regex(/^[a-z][a-z0-9_]*$/, "La clave debe estar en snake_case")
     .max(64)
     .optional(),
-  name: z.string().min(1, "Column name is required").max(120),
+  name: z.string().min(1, "El nombre de la columna es obligatorio").max(120),
   type: columnTypeSchema.default("TEXT"),
   required: z.boolean().default(false),
   defaultValue: z.string().max(500).nullish(),
@@ -37,12 +37,12 @@ export const templateColumnInputSchema = z.object({
 export type TemplateColumnInput = z.infer<typeof templateColumnInputSchema>;
 
 export const createTemplateSchema = z.object({
-  name: z.string().min(1, "Template name is required").max(160),
+  name: z.string().min(1, "El nombre de la plantilla es obligatorio").max(160),
   description: z.string().max(2000).nullish(),
   icon: z.string().max(40).nullish(),
   color: z.string().max(40).nullish(),
   voiceExample: z.string().max(1000).nullish(),
-  columns: z.array(templateColumnInputSchema).min(1, "Add at least one column").max(200),
+  columns: z.array(templateColumnInputSchema).min(1, "Añade al menos una columna").max(200),
 });
 
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>;
@@ -60,8 +60,8 @@ export const updateTemplateSchema = z.object({
 export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>;
 
 export const createSpreadsheetSchema = z.object({
-  templateId: z.string().min(1, "A template is required"),
-  name: z.string().min(1, "Spreadsheet name is required").max(200),
+  templateId: z.string().min(1, "Se requiere una plantilla"),
+  name: z.string().min(1, "El nombre de la hoja de cálculo es obligatorio").max(200),
   description: z.string().max(2000).nullish(),
 });
 

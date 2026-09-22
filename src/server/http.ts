@@ -17,25 +17,25 @@ export class AppError extends Error {
 }
 
 export class NotFoundError extends AppError {
-  constructor(entity = "Resource") {
-    super(`${entity} not found`, 404, "not_found");
+  constructor(entity = "El recurso") {
+    super(`${entity} no se encontró`, 404, "not_found");
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = "You do not have access to this resource") {
+  constructor(message = "No tienes acceso a este recurso") {
     super(message, 403, "forbidden");
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message = "Resource already exists") {
+  constructor(message = "El recurso ya existe") {
     super(message, 409, "conflict");
   }
 }
 
 export class ValidationError extends AppError {
-  constructor(message = "Validation failed", details?: unknown) {
+  constructor(message = "La validación falló", details?: unknown) {
     super(message, 422, "validation_error", details);
   }
 }
@@ -108,7 +108,7 @@ export function toErrorResponse(error: unknown): NextResponse {
     return NextResponse.json(
       {
         error: {
-          message: "Validation failed",
+          message: "La validación falló",
           code: "validation_error",
           details: error.flatten(),
         },
@@ -125,20 +125,20 @@ export function toErrorResponse(error: unknown): NextResponse {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2025") {
       return NextResponse.json(
-        { error: { message: "Resource not found", code: "not_found" } },
+        { error: { message: "No se encontró el recurso", code: "not_found" } },
         { status: 404 },
       );
     }
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: { message: "A record with these values already exists", code: "conflict" } },
+        { error: { message: "Ya existe un registro con estos valores", code: "conflict" } },
         { status: 409 },
       );
     }
   }
   console.error("[voicesheets] Unhandled route error:", error);
   return NextResponse.json(
-    { error: { message: "Something went wrong", code: "internal_error" } },
+    { error: { message: "Algo salió mal", code: "internal_error" } },
     { status: 500 },
   );
 }

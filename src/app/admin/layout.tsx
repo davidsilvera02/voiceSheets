@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           href="/dashboard"
           className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to app
+          <ArrowLeft className="h-4 w-4" /> Volver a la app
         </Link>
       </header>
       <main className="mx-auto w-full max-w-6xl p-6">{children}</main>
