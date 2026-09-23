@@ -56,13 +56,12 @@ export function TemplatePreview({
               <TableBody>
                 <TableRow>
                   {columns.map((c) => (
-                    <TableCell
-                      key={c.key}
-                      className="min-w-[12rem] max-w-xs whitespace-normal break-words align-top text-muted-foreground"
-                    >
-                      {c.aiHint?.trim() || (
-                        <span className="italic opacity-50">Sin sugerencia para la IA</span>
-                      )}
+                    <TableCell key={c.key} className="align-top text-muted-foreground">
+                      <div className="w-64 whitespace-normal break-words">
+                        {c.aiHint?.trim() || (
+                          <span className="italic opacity-50">Sin sugerencia para la IA</span>
+                        )}
+                      </div>
                     </TableCell>
                   ))}
                 </TableRow>

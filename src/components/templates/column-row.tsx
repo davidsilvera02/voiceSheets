@@ -237,12 +237,9 @@ export function ColumnRow({
             <Textarea
               value={column.aiHint}
               onChange={(e) => set("aiHint", e.target.value)}
-              placeholder="Explica este campo a la IA, p. ej. 'El nombre legal de la empresa proveedora, no una persona.'"
+              placeholder="Explica este campo a la IA."
               rows={2}
             />
-            <p className="text-[11px] text-muted-foreground">
-              Se usa al generar filas por voz/dictado para ayudar a la IA a elegir el valor correcto.
-            </p>
           </div>
         </div>
       )}
