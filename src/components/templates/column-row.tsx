@@ -7,25 +7,6 @@ import { ChevronDown, ChevronRight, GripVertical, Plus, Trash2, X } from "lucide
 import { cn } from "@/lib/utils";
 import { COLUMN_TYPES, COLUMN_TYPE_META, type ColumnType } from "@/lib/columns";
 
-/** A representative example placeholder for each column type. */
-function examplePlaceholder(type: ColumnType, options: string[]): string {
-  switch (type) {
-    case "NUMBER":
-      return "p. ej. 30";
-    case "CURRENCY":
-      return "p. ej. 4.50";
-    case "DATE":
-      return "p. ej. 2026-08-01";
-    case "BOOLEAN":
-      return "p. ej. true";
-    case "DROPDOWN":
-      return options[0] ? `p. ej. ${options[0]}` : "p. ej. Alta";
-    case "LONG_TEXT":
-      return "p. ej. Se envía en dos semanas";
-    default:
-      return "p. ej. Acme Corp";
-  }
-}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,8 +45,8 @@ export function ColumnRow({
   onRemove: () => void;
   /**
    * Structure lock: when the template already has spreadsheets, the column's
-   * type and required flag can't change and it can't be removed — but names,
-   * examples, descriptions, options, and AI hints stay editable.
+   * name, type, required flag, and order can't change and it can't be removed —
+   * but descriptions, options, and AI hints stay editable.
    */
   locked?: boolean;
 }) {
@@ -99,10 +80,16 @@ export function ColumnRow({
         <div className="flex flex-1 items-center gap-2">
           <button
             type="button"
-            className="cursor-grab touch-none rounded p-1 text-muted-foreground hover:bg-accent active:cursor-grabbing"
-            {...attributes}
-            {...listeners}
-            aria-label="Arrastra para reordenar"
+            disabled={locked}
+            className={cn(
+              "touch-none rounded p-1 text-muted-foreground",
+              locked
+                ? "cursor-not-allowed opacity-40"
+                : "cursor-grab hover:bg-accent active:cursor-grabbing",
+            )}
+            {...(locked ? {} : attributes)}
+            {...(locked ? {} : listeners)}
+            aria-label={locked ? "El orden está bloqueado" : "Arrastra para reordenar"}
           >
             <GripVertical className="h-4 w-4" />
           </button>
@@ -111,6 +98,8 @@ export function ColumnRow({
             onChange={(e) => set("name", e.target.value)}
             placeholder="Nombre de la columna"
             className="h-9 flex-1"
+            disabled={locked}
+            title={locked ? "El nombre está bloqueado mientras existan hojas de cálculo" : undefined}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -173,15 +162,6 @@ export function ColumnRow({
               value={column.description}
               onChange={(e) => set("description", e.target.value)}
               placeholder="Qué contiene esta columna"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">Valor de ejemplo</Label>
-            <Input
-              value={column.example}
-              onChange={(e) => set("example", e.target.value)}
-              placeholder={examplePlaceholder(column.type, column.options)}
               className="h-8"
             />
           </div>

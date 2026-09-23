@@ -171,7 +171,7 @@ export function VoiceEntryDialog({
             <Sparkles className="h-5 w-5 text-primary" /> Entrada por voz
           </DialogTitle>
           <DialogDescription>
-            Dicta un registro — la IA genera una fila a partir de tu transcripción. Revísala abajo y añádela en un solo paso.
+            Dicta un registro y la IA generará una fila.
           </DialogDescription>
         </DialogHeader>
 

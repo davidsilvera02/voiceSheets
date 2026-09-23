@@ -135,8 +135,6 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
       const o = orig.get(c.key);
       if (!o) return false;
       return (
-        c.name.trim() !== o.name ||
-        c.example.trim() !== (o.example ?? "") ||
         c.aiHint.trim() !== (o.aiHint ?? "") ||
         c.description.trim() !== (o.description ?? "")
       );
@@ -170,7 +168,7 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
           type: c.type,
           position: index,
           required: c.required,
-          example: c.example,
+          aiHint: c.aiHint,
           options: c.options,
           config: { currency: c.currency } as ColumnConfig,
         })),
@@ -345,9 +343,8 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
                 {template?.spreadsheetCount === 1 ? "" : "n"} esta plantilla
               </p>
               <p className="mt-0.5 text-muted-foreground">
-                Puedes refinar nombres, ejemplos y sugerencias para la IA. Para añadir, eliminar o
-                cambiar el tipo de una columna, duplica esta plantilla y crea nuevas hojas de
-                cálculo a partir de la copia.
+                Puedes refinar las descripciones y las sugerencias para la IA. Para cambiar
+                nombres, orden, tipos o añadir/eliminar columnas, duplica esta plantilla.
               </p>
             </div>
           </div>
@@ -454,18 +451,9 @@ export function TemplateEditor({ template }: { template?: TemplateDTO }) {
       <Dialog open={showUpdateSheets} onOpenChange={setShowUpdateSheets}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              ¿Actualizar {template?.spreadsheetCount} hoja
-              {template?.spreadsheetCount === 1 ? "" : "s"} de cálculo?
-            </DialogTitle>
+            <DialogTitle>¿Actualizar las hojas de cálculo?</DialogTitle>
             <DialogDescription>
-              Cambiaste las etiquetas de las columnas o las sugerencias para la IA. Esto también
-              actualizará {template?.spreadsheetCount === 1 ? "la" : "las"}{" "}
-              {template?.spreadsheetCount} hoja
-              {template?.spreadsheetCount === 1 ? "" : "s"} de cálculo creada
-              {template?.spreadsheetCount === 1 ? "" : "s"} a partir de esta plantilla. Solo
-              cambian los nombres y las sugerencias para la IA; tus datos, los tipos de columna y
-              el diseño siguen siendo los mismos.
+              Se aplicarán a las hojas de cálculo que usan esta plantilla. Tus datos no cambian.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:justify-between">

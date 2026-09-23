@@ -20,7 +20,7 @@ export function TemplatePreview({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   name: string;
-  columns: Pick<ColumnDefinition, "key" | "name" | "type" | "required" | "example">[];
+  columns: Pick<ColumnDefinition, "key" | "name" | "type" | "required" | "aiHint">[];
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -28,7 +28,7 @@ export function TemplatePreview({
         <DialogHeader>
           <DialogTitle>Vista previa · {name}</DialogTitle>
           <DialogDescription>
-            Así se verá una hoja de cálculo creada a partir de esta plantilla.
+            Las columnas de esta plantilla y la guía que usará la IA al rellenarlas.
           </DialogDescription>
         </DialogHeader>
         {columns.length === 0 ? (
@@ -54,15 +54,18 @@ export function TemplatePreview({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[0, 1].map((r) => (
-                  <TableRow key={r}>
-                    {columns.map((c) => (
-                      <TableCell key={c.key} className="whitespace-nowrap text-muted-foreground">
-                        {c.example || <span className="italic opacity-50">vacío</span>}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
+                <TableRow>
+                  {columns.map((c) => (
+                    <TableCell
+                      key={c.key}
+                      className="min-w-[12rem] max-w-xs whitespace-normal break-words align-top text-muted-foreground"
+                    >
+                      {c.aiHint?.trim() || (
+                        <span className="italic opacity-50">Sin sugerencia para la IA</span>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
               </TableBody>
             </Table>
           </div>
